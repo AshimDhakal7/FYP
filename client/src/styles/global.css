@@ -1,0 +1,8 @@
+/* global styles */
+:root{
+  --maxw:1100px;
+}
+*{box-sizing:border-box}
+body{ margin:0; font-family: Inter, system-ui, Arial, sans-serif; color:#111827; background:#fff; }
+.container{ max-width:var(--maxw); margin:0 auto; padding:0 18px; }
+.site-footer{ background:#164E2A; color:#fff; padding:22px 0; text-align:center;}
