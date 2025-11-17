@@ -1,39 +1,38 @@
+// src/components/Header.jsx
 import React from "react";
-import { Link } from "react-router-dom";
 import "../styles/header.css";
 
-export default function Header() {
-  const user = JSON.parse(localStorage.getItem("user") || "null");
-
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    window.location.href = "/login";
-  };
-
+const Header = () => {
   return (
-    <header className="site-header">
-      <div className="container header-inner">
-        <div className="brand">
-          <Link to="/">CricBook</Link>
+    <header className="header">
+      <div className="header-inner">
+        {/* Logo */}
+        <div className="header-logo">
+          CricBook
         </div>
 
-        <nav className="nav">
-          <Link to="/">Home</Link>
-          <Link to="/find">Find Cricsal</Link>
-          {!user ? (
-            <>
-              <Link to="/login" className="btn-small">Login</Link>
-              <Link to="/signup" className="btn-small outline">Sign Up</Link>
-            </>
-          ) : (
-            <>
-              <Link to="/dashboard">Dashboard</Link>
-              <button className="btn-small" onClick={handleLogout}>Logout</button>
-            </>
-          )}
+        {/* Nav links */}
+        <nav className="header-nav">
+          <a href="/" className="header-link">
+            Home
+          </a>
+          <a href="/find" className="header-link">
+            Find Cricsal
+          </a>
         </nav>
+
+        {/* Right side buttons */}
+        <div className="header-actions">
+          <a href="/login" className="header-btn header-btn--outline">
+            Login
+          </a>
+          <a href="/signup" className="header-btn header-btn--solid">
+            Sign Up
+          </a>
+        </div>
       </div>
     </header>
   );
-}
+};
+
+export default Header;

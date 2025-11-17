@@ -1,6 +1,108 @@
-.site-header { background:#164E2A; color: #fff; padding: 10px 0; }
-.header-inner { display:flex; justify-content:space-between; align-items:center; max-width:1100px; margin:0 auto; padding:0 18px;}
-.brand a { color:#fff; font-weight:700; text-decoration:none; font-size:20px;}
-.nav a, .nav button { margin-left:14px; color:#fff; text-decoration:none; background:none; border:none; cursor:pointer; font-size:14px;}
-.btn-small { padding:6px 10px; border-radius:6px; background:#fff; color:#164E2A; font-weight:600; text-decoration:none;}
-.btn-small.outline { background: transparent; border:1px solid rgba(255,255,255,0.3); color:#fff; }
+/* ============= HEADER / NAVBAR ============= */
+
+.header {
+    background-color: #0b5220;        /* main green */
+    height: 80px;                     /* ⬆️ taller standard nav height */
+    display: flex;
+    align-items: center;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  }
+  
+  .header-inner {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 0 24px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  
+  /* Logo */
+  .header-logo {
+    font-size: 26px;
+    font-weight: 700;
+    color: #ffffff;
+    cursor: pointer;
+  }
+  
+  /* Nav links */
+  .header-nav {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+    margin-left: 40px;
+    flex: 1;
+  }
+  
+  .header-link {
+    color: #ffffff;
+    text-decoration: none;
+    font-size: 16px;
+    font-weight: 500;
+    transition: opacity 0.2s ease, transform 0.15s ease;
+  }
+  
+  .header-link:hover {
+    opacity: 0.85;
+    transform: translateY(-1px);
+  }
+  
+  /* Buttons on the right */
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  
+  .header-btn {
+    border-radius: 6px;
+    padding: 8px 18px;
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+  }
+  
+  /* Login (outline) */
+  .header-btn--outline {
+    border: 1px solid #ffffff;
+    background: transparent;
+    color: #ffffff;
+  }
+  
+  .header-btn--outline:hover {
+    background-color: #ffffff;
+    color: #0b5220;
+  }
+  
+  /* Sign Up (solid) */
+  .header-btn--solid {
+    background-color: #ffffff;
+    color: #0b5220;
+    font-weight: 600;
+  }
+  
+  .header-btn--solid:hover {
+    background-color: #f3f3f3;
+    transform: translateY(-1px);
+  }
+  
+  /* Responsive tweak for smaller screens */
+  @media (max-width: 768px) {
+    .header-inner {
+      padding: 0 16px;
+    }
+  
+    .header-nav {
+      display: none; /* hide middle links on very small screens */
+    }
+  
+    .header-logo {
+      font-size: 22px;
+    }
+  }
+  
