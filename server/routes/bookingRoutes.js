@@ -9,14 +9,18 @@ const {
   cancelBooking,
 } = require("../controllers/bookingController");
 
-const { protect, admin } = require("../middleware/authMiddleware");
+const { protect } = require("../middleware/authMiddleware");
 
-// User
-router.post("/", protect, createBooking);
-router.get("/me", protect, getMyBookings);
-router.patch("/:id/cancel", protect, cancelBooking);
+// Create a booking (logged-in user)
+router.post("/", protect, createBooking);          // POST /api/bookings
 
-// Admin
-router.get("/", protect, admin, getAllBookings);
+// Get my bookings (logged-in user)
+router.get("/me", protect, getMyBookings);         // GET /api/bookings/me
+
+// Cancel my booking (logged-in user)
+router.patch("/:id/cancel", protect, cancelBooking); // PATCH /api/bookings/:id/cancel
+
+// Get all bookings (for now: any logged-in user, no admin restriction)
+router.get("/", protect, getAllBookings);          // GET /api/bookings
 
 module.exports = router;

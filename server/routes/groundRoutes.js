@@ -10,15 +10,15 @@ const {
   deleteGround,
 } = require("../controllers/groundController");
 
-const { protect, admin } = require("../middleware/authMiddleware");
+const { protect } = require("../middleware/authMiddleware");
 
-// Public
-router.get("/", getGrounds);
-router.get("/:id", getGroundById);
+// Public routes
+router.get("/", getGrounds);        // GET /api/grounds
+router.get("/:id", getGroundById);  // GET /api/grounds/:id
 
-// Admin
-router.post("/", protect, admin, createGround);
-router.put("/:id", protect, admin, updateGround);
-router.delete("/:id", protect, admin, deleteGround);
+// Protected routes (any logged-in user for now)
+router.post("/", protect, createGround);      // POST /api/grounds
+router.put("/:id", protect, updateGround);    // PUT /api/grounds/:id
+router.delete("/:id", protect, deleteGround); // DELETE /api/grounds/:id
 
 module.exports = router;
