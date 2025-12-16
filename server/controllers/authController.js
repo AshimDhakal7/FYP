@@ -1,6 +1,6 @@
 // server/controllers/authController.js
-const jwt = require("jsonwebtoken");
-const User = require("../models/User");
+import jwt from "jsonwebtoken";
+import User from "../models/User.js";
 
 // Generate JWT token
 const generateToken = (id) => {
@@ -9,27 +9,22 @@ const generateToken = (id) => {
   });
 };
 
-// @desc    Register new user
-// @route   POST /api/auth/register
-// @access  Public
+// Register
 const registerUser = async (req, res) => {
   try {
-    console.log("✅ Hit registerUser with body:", req.body);
-
     const { name, email, password } = req.body;
 
-    // Basic validation
     if (!name || !email || !password) {
-      return res.status(400).json({ message: "All fields are required" });
+      return res.status(400).json({ message: "Please fill in all fields" });
     }
 
-    // Check if user already exists
-    const userExists = await User.findOne({ email });
-    if (userExists) {
-      return res.status(400).json({ message: "User already exists" });
+    const existing = await User.findOne({ email });
+    if (existing) {
+      return res
+        .status(400)
+        .json({ message: "An account with this email already exists" });
     }
 
-    // Create user (password hashed in User model pre-save hook)
     const user = await User.create({ name, email, password });
 
     return res.status(201).json({
@@ -45,30 +40,19 @@ const registerUser = async (req, res) => {
   }
 };
 
-// @desc    Login user
-// @route   POST /api/auth/login
-// @access  Public
+// Login
 const loginUser = async (req, res) => {
   try {
-    console.log("✅ Hit loginUser with body:", req.body);
-
     const { email, password } = req.body;
 
-    // Basic validation
     if (!email || !password) {
-      return res
-        .status(400)
-        .json({ message: "Email and password are required" });
+      return res.status(400).json({ message: "Please fill in all fields" });
     }
 
     const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(400).json({ message: "Invalid email or password" });
-    }
 
-    const isMatch = await user.matchPassword(password);
-    if (!isMatch) {
-      return res.status(400).json({ message: "Invalid email or password" });
+    if (!user || !(await user.matchPassword(password))) {
+      return res.status(401).json({ message: "Invalid email or password" });
     }
 
     return res.json({
@@ -84,17 +68,9 @@ const loginUser = async (req, res) => {
   }
 };
 
-// @desc    Get logged-in user profile
-// @route   GET /api/auth/me
-// @access  Private
+// Profile
 const getProfile = async (req, res) => {
   try {
-    console.log("✅ Hit getProfile, user:", req.user?._id);
-
-    if (!req.user) {
-      return res.status(401).json({ message: "Not authorized" });
-    }
-
     return res.json({
       _id: req.user._id,
       name: req.user.name,
@@ -107,7 +83,7 @@ const getProfile = async (req, res) => {
   }
 };
 
-module.exports = {
+export default {
   registerUser,
   loginUser,
   getProfile,
