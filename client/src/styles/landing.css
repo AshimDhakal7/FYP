@@ -1,32 +1,350 @@
-/* basic tokens */
-.container { max-width:1100px; margin:0 auto; padding:0 18px; }
-
-/* hero */
-.hero { background:#1e7f2e; color:#fff; padding:36px 0; }
-.hero-inner { display:flex; gap:24px; align-items:center; justify-content:space-between; }
-.hero-left { flex:1; }
-.hero-left h1 { font-size:38px; margin:0 0 12px; }
-.lead { margin: 8px 0 18px; opacity:0.95; }
-.ctas .btn { margin-right:12px; }
-
-.btn { display:inline-block; padding:10px 16px; border-radius:8px; text-decoration:none; font-weight:600; }
-.btn.primary { background:#fff; color:#1e7f2e; }
-.btn.outline { background:transparent; border:2px solid rgba(255,255,255,0.85); color:#fff; }
-
-/* why */
-.why { padding:28px 0; background:#eef1ef; text-align:center; }
-.why .features { display:flex; gap:20px; justify-content:center; margin-top:18px; }
-.why .card { background:#fff; padding:18px; width:260px; border-radius:8px; box-shadow:0 6px 18px rgba(0,0,0,0.06); }
-
-/* featured */
-.featured { padding:28px 0; }
-.list { display:flex; gap:20px; justify-content:center; margin-top:14px; }
-.place { width:320px; background:#fff; padding:12px; border-radius:6px; box-shadow:0 6px 18px rgba(0,0,0,0.05); text-align:left;}
-.thumb { height:150px; background:#c8d8c8; border-radius:6px; margin-bottom:10px; }
-
-/* responsive */
-@media (max-width: 820px) {
-  .hero-inner { flex-direction:column; text-align:center; }
-  .why .features, .list { flex-direction:column; align-items:center; }
+.lp {
+  min-height: 100vh;
+  background: #d6dbd7;
+  color: #0f1a12;
 }
-  
+
+/* NAV */
+.lp-nav {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: #0b5220;
+  border-bottom: 1px solid rgba(255,255,255,0.15);
+}
+
+.lp-nav-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.lp-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+
+.lp-logo {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.14);
+  border: 1px solid rgba(255,255,255,0.22);
+  display: grid;
+  place-items: center;
+  font-weight: 900;
+  color: #fff;
+  transition: transform 0.18s ease, filter 0.18s ease;
+}
+
+.lp-logo:hover {
+  transform: translateY(-1px) scale(1.03);
+  filter: brightness(1.05);
+}
+
+.lp-logo.small {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+}
+
+.lp-brand-name {
+  font-weight: 900;
+  color: #fff;
+  letter-spacing: 0.2px;
+}
+
+.lp-links {
+  display: flex;
+  gap: 16px;
+}
+
+.lp-links a {
+  text-decoration: none;
+  color: rgba(255,255,255,0.86);
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.lp-links a:hover {
+  color: #ffffff;
+  text-decoration: underline;
+  text-underline-offset: 5px;
+}
+
+.lp-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Buttons */
+.lp-btn {
+  border: none;
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-weight: 900;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.lp-btn.primary {
+  background: #0b5220;
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.25);
+}
+
+.lp-btn.primary:hover {
+  filter: brightness(1.05);
+}
+
+.lp-btn.ghost {
+  background: rgba(255,255,255,0.12);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.18);
+}
+
+.lp-btn.white {
+  background: #ffffff;
+  color: #0b5220;
+  border: 1px solid rgba(255,255,255,0.3);
+}
+
+.lp-btn.white:hover {
+  filter: brightness(0.98);
+}
+
+.lp-btn.full { width: 100%; }
+
+/* HERO */
+.lp-hero {
+  background: #1f7a31;
+  padding: 56px 18px;
+}
+
+.lp-hero-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.lp-hero h1 {
+  margin: 0;
+  color: #fff;
+  font-size: 44px;
+  line-height: 1.1;
+}
+
+.lp-hero p {
+  margin-top: 12px;
+  color: rgba(255,255,255,0.85);
+  font-weight: 600;
+}
+
+.lp-hero-cta {
+  margin-top: 18px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* Sections */
+.lp-section {
+  padding: 28px 18px;
+}
+
+.lp-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.lp-title {
+  margin: 0 0 14px;
+  color: #1b3b1a;
+  font-size: 22px;
+}
+
+.lp-grid2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.lp-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0px 6px 22px rgba(0,0,0,0.10);
+}
+
+.lp-card.venue {
+  padding: 0;
+  overflow: hidden;
+}
+
+.venue-img {
+  height: 170px;
+  background: #cfe0d1;
+}
+
+.lp-card.venue h3,
+.lp-card.venue p {
+  padding: 0 16px;
+}
+
+.lp-card.venue h3 { margin-top: 14px; }
+.lp-card.venue p { padding-bottom: 16px; }
+
+.muted {
+  color: rgba(0,0,0,0.65);
+}
+.small { font-size: 13px; }
+
+/* About */
+.lp-card.about p {
+  margin: 0;
+  line-height: 1.6;
+}
+
+.about-points {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
+.point {
+  background: #eef1ef;
+  border: 1px solid rgba(0,0,0,0.10);
+  border-radius: 999px;
+  padding: 8px 10px;
+  font-weight: 800;
+  font-size: 13px;
+  color: rgba(0,0,0,0.7);
+}
+
+/* Contact form */
+/* ---- Contact form: clean, consistent inputs ---- */
+.contact-form input,
+.contact-form textarea {
+  width: 100%;
+  max-width: 100%;
+  display: block;
+  box-sizing: border-box;
+
+  padding: 14px 16px;
+  border-radius: 16px;
+  border: 1px solid rgba(0, 0, 0, 0.16);
+  background: #fff;
+
+  font-size: 16px;
+  line-height: 1.2;
+  color: #111;
+
+  outline: none;
+  box-shadow: none;
+
+  /* reduce weird browser styling */
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+/* textarea sizing */
+.contact-form textarea {
+  resize: vertical;
+  min-height: 220px;   /* match your screenshot look */
+  max-height: 420px;
+}
+
+/* Clean focus (remove ugly green double-border) */
+.contact-form input:focus,
+.contact-form textarea:focus {
+  border-color: rgba(11, 82, 32, 0.55);
+  box-shadow: 0 0 0 4px rgba(11, 82, 32, 0.12);
+}
+
+/* Remove extra inner outlines some browsers add */
+.contact-form input:focus-visible,
+.contact-form textarea:focus-visible {
+  outline: none;
+}
+
+/* Stop Chrome autofill from changing colors + adding weird look */
+.contact-form input:-webkit-autofill,
+.contact-form input:-webkit-autofill:hover,
+.contact-form input:-webkit-autofill:focus,
+.contact-form textarea:-webkit-autofill {
+  -webkit-text-fill-color: #111;
+  transition: background-color 9999s ease-in-out 0s;
+}
+
+/* ✅ Try to hide browser "contact/email" UI icons (works in some browsers) */
+.contact-form input[type="email"]::-webkit-contacts-auto-fill-button,
+.contact-form input[type="email"]::-webkit-credentials-auto-fill-button {
+  visibility: hidden;
+  display: none !important;
+  pointer-events: none;
+  height: 0;
+  width: 0;
+}
+
+/* Button spacing */
+.contact-form button {
+  width: 100%;
+  border-radius: 16px;
+  padding: 14px 16px;
+}
+
+/* Footer */
+.lp-footer {
+  background: #0b5220;
+  color: #fff;
+  padding: 18px;
+  margin-top: 18px;
+}
+
+.lp-footer-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  align-items: center;
+}
+
+.footer-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.footer-right {
+  display: flex;
+  gap: 14px;
+}
+
+.footer-right a {
+  text-decoration: none;
+  color: rgba(255,255,255,0.86);
+  font-weight: 800;
+  font-size: 14px;
+}
+
+.footer-right a:hover {
+  color: #ffffff;
+  text-decoration: underline;
+  text-underline-offset: 5px;
+}
+
+/* Responsive */
+@media (max-width: 980px) {
+  .lp-links { display: none; }
+  .lp-grid2 { grid-template-columns: 1fr; }
+  .lp-hero h1 { font-size: 34px; }
+  .lp-footer-inner { flex-direction: column; align-items: flex-start; }
+}

@@ -1,0 +1,282 @@
+/* ============ Navbar (Green Theme) ============ */
+
+:root {
+  --g-900: #0b3d2e;
+  --g-800: #0f5132;
+  --g-700: #116a43;
+  --g-600: #198754;
+  --mint: #caffdd;
+  --mint-2: #7fffd4;
+  --white: #ffffff;
+  --text: #eafff4;
+  --text-d: #083021;
+  --shadow: 0 10px 26px rgba(0, 0, 0, 0.18);
+  --shadow-soft: 0 8px 18px rgba(0, 0, 0, 0.12);
+  --r: 14px;
+}
+
+/* full-width, no side gaps */
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+/* Header wrapper */
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  width: 100%;
+  background: linear-gradient(90deg, var(--g-900), var(--g-700), var(--g-600));
+  border-bottom: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: var(--shadow);
+}
+
+/* Inner layout */
+.nav-inner {
+  max-width: 1280px;          /* keeps content centered while bg stays full-width */
+  margin: 0 auto;
+  padding: 12px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+/* ============ Brand ============ */
+.nav-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  padding: 6px 10px;
+  border-radius: 12px;
+  transition: transform 180ms ease, background 180ms ease;
+}
+
+.nav-brand:hover {
+  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* Interactive logo "CB" */
+.nav-logo {
+  width: 34px;
+  height: 34px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  color: var(--text-d);
+  background: radial-gradient(circle at 30% 30%, var(--mint), #25d07c 60%, #0b3d2e 100%);
+  box-shadow: 0 0 16px rgba(124, 255, 208, 0.65);
+  transition: transform 200ms ease, box-shadow 200ms ease;
+}
+
+.nav-brand:hover .nav-logo {
+  transform: rotate(-6deg) scale(1.08);
+  box-shadow: 0 0 24px rgba(124, 255, 208, 0.9);
+}
+
+.nav-name {
+  color: var(--text);
+  font-weight: 900;
+  font-size: 18px;
+  letter-spacing: 0.7px;
+  position: relative;
+}
+
+/* underline animation on CricBook text */
+.nav-name::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -4px;
+  width: 0%;
+  height: 2px;
+  border-radius: 999px;
+  background: rgba(202, 255, 221, 0.9);
+  transition: width 220ms ease;
+}
+.nav-brand:hover .nav-name::after {
+  width: 100%;
+}
+
+/* ============ Links ============ */
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.nav-link {
+  color: rgba(234, 255, 244, 0.92);
+  text-decoration: none;
+  font-weight: 650;
+  font-size: 14.5px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  transition: background 160ms ease, transform 160ms ease, color 160ms ease;
+}
+
+.nav-link:hover {
+  background: rgba(255, 255, 255, 0.14);
+  transform: translateY(-1px);
+  color: var(--mint);
+}
+
+/* NavLink active styling */
+.nav-link.active {
+  background: rgba(202, 255, 221, 0.22);
+  color: var(--mint);
+  box-shadow: inset 0 0 0 1px rgba(202, 255, 221, 0.35);
+}
+
+/* ============ Actions / Buttons ============ */
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  position: relative;
+}
+
+.btn {
+  border: none;
+  outline: none;
+  cursor: pointer;
+  font-weight: 800;
+  font-size: 14px;
+  padding: 9px 14px;
+  border-radius: 999px;
+  transition: transform 160ms ease, background 160ms ease, color 160ms ease, box-shadow 160ms ease;
+  user-select: none;
+}
+
+.btn:active {
+  transform: translateY(0px) scale(0.99);
+}
+
+/* Ghost (Login) */
+.btn.ghost {
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--text);
+  box-shadow: var(--shadow-soft);
+}
+
+.btn.ghost:hover {
+  background: rgba(255, 255, 255, 0.18);
+  transform: translateY(-1px);
+}
+
+/* White (Create Account) */
+.btn.white {
+  background: rgba(202, 255, 221, 0.95);
+  color: var(--text-d);
+  box-shadow: var(--shadow-soft);
+}
+
+.btn.white:hover {
+  background: var(--mint);
+  transform: translateY(-1px);
+}
+
+.caret {
+  margin-left: 6px;
+  font-weight: 900;
+  opacity: 0.85;
+}
+
+/* ============ Dropdown ============ */
+.dropdown {
+  position: relative;
+}
+
+.menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 10px);
+  width: 290px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.22);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+  animation: pop 140ms ease-out;
+  z-index: 2000;
+}
+
+/* small pointer */
+.menu::before {
+  content: "";
+  position: absolute;
+  top: -7px;
+  right: 18px;
+  width: 14px;
+  height: 14px;
+  background: rgba(255, 255, 255, 0.98);
+  transform: rotate(45deg);
+  border-left: 1px solid rgba(0, 0, 0, 0.06);
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+@keyframes pop {
+  from { transform: translateY(-6px); opacity: 0.5; }
+  to   { transform: translateY(0); opacity: 1; }
+}
+
+.menu-item {
+  width: 100%;
+  text-align: left;
+  padding: 12px 14px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-weight: 850;
+  color: #0b3d2e;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  transition: background 140ms ease;
+}
+
+.menu-item:hover {
+  background: rgba(25, 135, 84, 0.12);
+}
+
+.menu-sub {
+  font-weight: 600;
+  font-size: 12.5px;
+  color: rgba(11, 61, 46, 0.7);
+}
+
+/* ============ Responsive ============ */
+@media (max-width: 900px) {
+  .nav-inner {
+    max-width: 100%;
+  }
+  .nav-links {
+    gap: 4px;
+  }
+  .nav-link {
+    padding: 7px 10px;
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 680px) {
+  .nav-inner {
+    padding: 10px 12px;
+    gap: 10px;
+  }
+
+  /* keep it usable on small screens: allow wrap */
+  .nav-links {
+    display: none; /* simplest: hide links on very small screens */
+  }
+
+  /* If you want links visible instead of hidden, replace above with:
+     .nav-links { display:flex; flex-wrap:wrap; }
+  */
+}

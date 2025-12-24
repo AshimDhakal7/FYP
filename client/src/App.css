@@ -1,11 +1,17 @@
-
+/* ✅ FIX: make app full-width (remove side padding/gaps) */
 #root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  text-align: left;
+
 }
 
+html, body {
+  margin: 0;
+  padding: 0;
+}
 
 .logo {
   height: 6em;
