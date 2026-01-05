@@ -721,6 +721,186 @@ export const resetPassword = async (req, res) => {
     return res.status(500).json({ message: "Reset failed" });
   }
 };
+/* =========================
+   PASSWORD RESET (OTP) - SEND OTP
+   POST /api/auth/password/send-otp
+   body: { email }
+========================= */
+export const sendPasswordResetOtp = async (req, res) => {
+  try {
+    const email = normalizeEmail(req.body.email);
+
+    if (!email) {
+      return res.status(400).json({ message: "Email is required" });
+    }
+
+    const user = await User.findOne({ email });
+
+    // ✅ Don't reveal if email exists
+    if (!user) {
+      return res.json({ message: "If email exists, OTP has been sent." });
+    }
+
+    // ⏱ 60 seconds cooldown
+    if (
+      user.passwordResetOtpLastSentAt &&
+      Date.now() - new Date(user.passwordResetOtpLastSentAt).getTime() < 60000
+    ) {
+      return res.status(429).json({
+        message: "Please wait before requesting OTP again.",
+      });
+    }
+
+    const otp = generateOtp();
+
+    user.passwordResetOtpHash = hashOtp(otp);
+    user.passwordResetOtpExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 min
+    user.passwordResetOtpLastSentAt = new Date();
+    await user.save();
+
+    // ✅ Send OTP email (same style as signup)
+    await sendEmail({
+      to: user.email,
+      subject: "CricBook Password Reset OTP",
+      html: `
+      <div style="
+        background:#f4f6f8;
+        padding:30px;
+        font-family: Arial, Helvetica, sans-serif;
+      ">
+        <div style="
+          max-width:520px;
+          margin:0 auto;
+          background:#ffffff;
+          border-radius:10px;
+          overflow:hidden;
+          box-shadow:0 4px 12px rgba(0,0,0,0.1);
+        ">
+    
+          <div style="
+            background:linear-gradient(135deg,#0f5132,#198754);
+            padding:20px;
+            text-align:center;
+            color:#ffffff;
+          ">
+            <h1 style="margin:0;font-size:26px;">CricBook</h1>
+            <p style="margin:5px 0 0;font-size:14px;">Password Reset</p>
+          </div>
+    
+          <div style="padding:30px;color:#333333;">
+            <p style="font-size:15px;line-height:1.6;">
+              Use the OTP below to reset your CricBook password:
+            </p>
+    
+            <div style="margin:30px 0;text-align:center;">
+              <div style="
+                display:inline-block;
+                padding:15px 30px;
+                font-size:32px;
+                letter-spacing:6px;
+                font-weight:bold;
+                color:#0f5132;
+                background:#e9f7ef;
+                border-radius:8px;
+              ">
+                ${otp}
+              </div>
+            </div>
+    
+            <p style="font-size:14px;color:#555;">
+              ⏱ This OTP is valid for <b>10 minutes</b>.
+            </p>
+    
+            <p style="font-size:14px;color:#555;">
+              If you did not request this, ignore this email.
+            </p>
+    
+            <hr style="border:none;border-top:1px solid #eee;margin:25px 0;" />
+    
+            <p style="font-size:13px;color:#777;">
+              Need help? Contact our support team anytime.
+            </p>
+          </div>
+    
+          <div style="
+            background:#f9fafb;
+            padding:15px;
+            text-align:center;
+            font-size:12px;
+            color:#888;
+          ">
+            © ${new Date().getFullYear()} CricBook. All rights reserved.
+          </div>
+    
+        </div>
+      </div>
+      `,
+    });
+
+    return res.json({ message: "If email exists, OTP has been sent." });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Failed to send reset OTP" });
+  }
+};
+
+/* =========================
+   PASSWORD RESET (OTP) - VERIFY OTP + UPDATE PASSWORD
+   POST /api/auth/password/reset-otp
+   body: { email, otp, password }
+========================= */
+export const resetPasswordWithOtp = async (req, res) => {
+  try {
+    const email = normalizeEmail(req.body.email);
+    const { otp, password } = req.body;
+
+    if (!email || !otp || !password) {
+      return res.status(400).json({ message: "Missing fields" });
+    }
+
+    if (String(password).length < 6) {
+      return res
+        .status(400)
+        .json({ message: "Password must be at least 6 characters." });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ message: "Invalid OTP or email" });
+    }
+
+    if (!user.passwordResetOtpHash || !user.passwordResetOtpExpires) {
+      return res.status(400).json({
+        message: "OTP not found. Please request OTP again.",
+      });
+    }
+
+    if (user.passwordResetOtpExpires < Date.now()) {
+      return res.status(400).json({
+        message: "OTP expired. Please request OTP again.",
+      });
+    }
+
+    if (hashOtp(otp) !== user.passwordResetOtpHash) {
+      return res.status(400).json({ message: "Invalid OTP" });
+    }
+
+    // ✅ Update password (your User model will hash it)
+    user.password = password;
+
+    // ✅ Clear OTP reset fields
+    user.passwordResetOtpHash = undefined;
+    user.passwordResetOtpExpires = undefined;
+    user.passwordResetOtpLastSentAt = undefined;
+
+    await user.save();
+
+    return res.json({ message: "Password updated successfully." });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Reset failed" });
+  }
+};
 
 /* =========================
    ALIAS (IMPORTANT FIX)

@@ -55,6 +55,8 @@ import {
   loginUser,
   forgotPassword,
   resetPassword,
+  sendPasswordResetOtp,
+  resetPasswordWithOtp,
 } from "../controllers/authController.js";
 
 const router = express.Router();
@@ -72,5 +74,8 @@ router.post("/login", loginUser);
 // ✅ Password reset
 router.post("/forgot-password", forgotPassword);
 router.post("/reset-password/:token", resetPassword);
+router.post("/password/send-otp", sendPasswordResetOtp);
+router.post("/password/reset-otp", resetPasswordWithOtp);
+
 
 export default router;

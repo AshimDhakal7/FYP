@@ -1,131 +1,167 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
-import "../styles/forgotPassword.css";
+import { Link, useNavigate } from "react-router-dom";
+import "../styles/signup.css";
 import api from "../utils/api";
 
-export default function ForgotPassword() {
+export default function ForgotPasswordOtp() {
+  const navigate = useNavigate();
+
+  const [step, setStep] = useState(1); // 1=email, 2=otp+newpass
   const [email, setEmail] = useState("");
+  const [otp, setOtp] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [msg, setMsg] = useState("");
-  const [devToken, setDevToken] = useState("");
+  const [success, setSuccess] = useState("");
 
-  const handleSubmit = async (e) => {
+  const sendOtp = async (e) => {
     e.preventDefault();
     setError("");
-    setMsg("");
-    setDevToken("");
+    setSuccess("");
 
-    if (password !== confirmPassword) {
-      setError("Passwords do not match.");
-      return;
-    }
-
-    if (password.length < 6) {
-      setError("Password must be at least 6 characters.");
+    if (!email) {
+      setError("Please enter your email.");
       return;
     }
 
     try {
       setLoading(true);
+      await api.post("/api/auth/password/send-otp", { email });
+      setSuccess("OTP sent. Please check your email.");
+      setStep(2);
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to send OTP");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-      // 1️⃣ Request reset token
-      const forgotRes = await api.post("/api/auth/forgot-password", { email });
-      const token = forgotRes.data?.resetToken;
+  const resetWithOtp = async (e) => {
+    e.preventDefault();
+    setError("");
+    setSuccess("");
 
-      if (!token) {
-        setMsg("If this email exists, reset instructions were sent.");
-        return;
-      }
+    if (otp.length !== 6) {
+      setError("Please enter a valid 6-digit OTP.");
+      return;
+    }
+    if (!password || password.length < 6) {
+      setError("Password must be at least 6 characters.");
+      return;
+    }
+    if (password !== confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
 
-      // 2️⃣ Reset password using DEV token
-      await api.post(`/api/auth/reset-password/${token}`, {
+    try {
+      setLoading(true);
+      await api.post("/api/auth/password/reset-otp", {
+        email,
+        otp,
         password,
       });
 
-      setMsg("Password updated successfully. You can now log in.");
-      setPassword("");
-      setConfirmPassword("");
+      setSuccess("Password updated! Redirecting to login...");
+      setTimeout(() => navigate("/login", { replace: true }), 900);
     } catch (err) {
-      setError(
-        err.response?.data?.message ||
-          err.message ||
-          "Something went wrong."
-      );
+      setError(err.response?.data?.message || "Reset failed");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="fp-page">
-      <div className="fp-card">
-        {/* LEFT SIDE */}
-        <div className="fp-side">
-          <h2>Reset your password</h2>
-          <p>Securely update your CricBook password.</p>
+    <div className="auth-page">
+      <div className="auth-card">
+        <div className="auth-side">
+          <h2>CricBook</h2>
+          <p>Reset your password using OTP verification.</p>
           <ul>
-            <li>✔ Secure reset flow</li>
-            <li>✔ Password encrypted</li>
-            <li>✔ Takes less than a minute</li>
+            <li>✔ Secure OTP reset</li>
+            <li>✔ Valid for 10 minutes</li>
+            <li>✔ Get back to booking fast</li>
           </ul>
         </div>
 
-        {/* RIGHT SIDE */}
-        <div className="fp-form-wrap">
+        <div className="auth-form-wrap">
           <h1>Forgot Password</h1>
-          <p className="fp-subtitle">
-            Enter your email and choose a new password.
+
+          <p className="auth-subtitle">
+            {step === 1
+              ? "Enter your email to receive an OTP."
+              : "Enter OTP and set your new password."}
           </p>
 
-          {error && <div className="fp-alert error">{error}</div>}
-          {msg && <div className="fp-alert success">{msg}</div>}
+          {error && <div className="auth-error">{error}</div>}
+          {success && <div className="auth-success">{success}</div>}
 
-          <form className="fp-form" onSubmit={handleSubmit}>
-            <label>
-              Email
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@example.com"
-                required
-              />
-            </label>
+          {step === 1 ? (
+            <form className="auth-form" onSubmit={sendOtp}>
+              <label>
+                Email
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="you@example.com"
+                  required
+                />
+              </label>
 
-            <label>
-              New Password
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                required
-              />
-            </label>
+              <button type="submit" disabled={loading}>
+                {loading ? "Sending..." : "Send OTP"}
+              </button>
+            </form>
+          ) : (
+            <form className="auth-form" onSubmit={resetWithOtp}>
+              <label>
+                OTP Code
+                <input
+                  type="text"
+                  value={otp}
+                  onChange={(e) =>
+                    setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))
+                  }
+                  placeholder="Enter 6-digit OTP"
+                  required
+                />
+              </label>
 
-            <label>
-              Confirm New Password
-              <input
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="••••••••"
-                required
-              />
-            </label>
+              <label>
+                New Password
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="New password"
+                  minLength={6}
+                  required
+                />
+              </label>
 
-            <button type="submit" disabled={loading}>
-              {loading ? "Updating..." : "Reset Password"}
-            </button>
-          </form>
+              <label>
+                Confirm Password
+                <input
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Confirm password"
+                  minLength={6}
+                  required
+                />
+              </label>
 
-          <p className="fp-switch">
-            Remembered your password?{" "}
-            <Link to="/login">Back to Log In</Link>
+              <button type="submit" disabled={loading}>
+                {loading ? "Updating..." : "Reset Password"}
+              </button>
+            </form>
+          )}
+
+          <p className="auth-switch">
+            Back to <Link to="/login">Log in</Link>
           </p>
         </div>
       </div>

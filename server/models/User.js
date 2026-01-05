@@ -50,6 +50,7 @@ import bcrypt from "bcryptjs";
 const userSchema = new mongoose.Schema(
   {
     name: { type: String, required: true, trim: true },
+
     email: {
       type: String,
       required: true,
@@ -72,9 +73,14 @@ const userSchema = new mongoose.Schema(
 
     role: { type: String, default: "user" },
 
-    // Reset password fields
+    // Reset password fields (token-based, optional)
     resetPasswordToken: { type: String },
     resetPasswordExpire: { type: Date },
+
+    // ✅ ADDED: Reset password OTP fields (OTP-based forgot password)
+    passwordResetOtpHash: { type: String },
+    passwordResetOtpExpires: { type: Date },
+    passwordResetOtpLastSentAt: { type: Date },
   },
   { timestamps: true }
 );
