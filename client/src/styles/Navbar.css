@@ -280,3 +280,27 @@ html, body {
      .nav-links { display:flex; flex-wrap:wrap; }
   */
 }
+.nav-hamburger {
+  display: none;
+  background: transparent;
+  border: 0;
+  color: #fff;
+  font-size: 22px;
+  cursor: pointer;
+}
+
+@media (max-width: 900px) {
+  .nav-hamburger {
+    display: block;
+  }
+  .nav-links {
+    display: none;
+  }
+  .nav-links.open {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-top: 10px;
+  }
+}
+

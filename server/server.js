@@ -4,16 +4,21 @@ import dotenv from "dotenv";
 import connectDB from "./config/dbconfig.js";
 
 import authRoutes from "./routes/authRoutes.js";
+import bookingRoutes from "./routes/bookingRoutes.js";
 
 dotenv.config();
 connectDB();
 
-const app = express();
+const app = express(); // ✅ REQUIRED: app must be created first
 
-app.use(cors({
-  origin: ["http://localhost:5173", "http://localhost:3000"],
-  credentials: true
-}));
+app.use("/api/bookings", bookingRoutes);
+
+app.use(
+  cors({
+    origin: ["http://localhost:5173", "http://localhost:3000"],
+    credentials: true,
+  })
+);
 app.use(express.json());
 
 app.get("/", (req, res) => res.send("✅ CricBook API is running"));

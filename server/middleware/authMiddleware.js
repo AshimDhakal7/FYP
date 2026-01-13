@@ -1,41 +1,32 @@
-// server/middleware/authMiddleware.js
-const jwt = require("jsonwebtoken");
-const User = require("../models/User");
+import jwt from "jsonwebtoken";
+import User from "../models/User.js";
 
 // Protect routes (requires Bearer token)
-const protect = async (req, res, next) => {
+export const protect = async (req, res, next) => {
   let token;
 
-  if (
-    req.headers.authorization &&
-    req.headers.authorization.startsWith("Bearer ")
-  ) {
+  // ✅ ESSENTIAL: Allow alternative token headers (fallback)
+  if (!req.headers.authorization) {
+    const fallbackToken = req.headers["x-auth-token"] || req.headers.token;
+    if (fallbackToken) req.headers.authorization = `Bearer ${fallbackToken}`;
+  }
+
+  if (req.headers.authorization && req.headers.authorization.startsWith("Bearer ")) {
     try {
       token = req.headers.authorization.split(" ")[1];
 
-      // Verify token
-      const decoded = jwt.verify(
-        token,
-        process.env.JWT_SECRET || "devsecret"
-      );
+      const decoded = jwt.verify(token, process.env.JWT_SECRET || "devsecret");
 
-      // Attach user (without password) to request
       const user = await User.findById(decoded.id).select("-password");
-      if (!user) {
-        return res.status(401).json({ message: "User not found" });
-      }
+      if (!user) return res.status(401).json({ message: "User not found" });
 
       req.user = user;
       return next();
     } catch (err) {
       console.error("Protect middleware error:", err.message);
-      return res
-        .status(401)
-        .json({ message: "Not authorized, token failed" });
+      return res.status(401).json({ message: "Not authorized, token failed" });
     }
   }
 
   return res.status(401).json({ message: "Not authorized, no token" });
 };
-
-module.exports = { protect };

@@ -1,26 +1,17 @@
-// server/routes/bookingRoutes.js
-const express = require("express");
+import express from "express";
+import { protect } from "../middleware/authMiddleware.js";
+import { createBooking, getMyBookings } from "../controllers/bookingController.js";
+
+
+
 const router = express.Router();
 
-const {
-  createBooking,
-  getMyBookings,
-  getAllBookings,
-  cancelBooking,
-} = require("../controllers/bookingController");
+// Create a booking
+router.post("/", protect, createBooking);
 
-const { protect } = require("../middleware/authMiddleware");
+// Get logged-in user's bookings
+router.get("/my", protect, getMyBookings);
 
-// Create a booking (logged-in user)
-router.post("/", protect, createBooking);          // POST /api/bookings
 
-// Get my bookings (logged-in user)
-router.get("/me", protect, getMyBookings);         // GET /api/bookings/me
 
-// Cancel my booking (logged-in user)
-router.patch("/:id/cancel", protect, cancelBooking); // PATCH /api/bookings/:id/cancel
-
-// Get all bookings (for now: any logged-in user, no admin restriction)
-router.get("/", protect, getAllBookings);          // GET /api/bookings
-
-module.exports = router;
+export default router;

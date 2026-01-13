@@ -1,5 +1,4 @@
-// server/models/Booking.js
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const bookingSchema = new mongoose.Schema(
   {
@@ -8,34 +7,32 @@ const bookingSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
-    ground: {
+    cricsal: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Ground",
+      ref: "Cricsal",
       required: true,
     },
     date: {
-      type: String, // e.g. "2025-11-20"
+      type: String,
       required: true,
     },
-    startTime: {
-      type: String, // e.g. "18:00"
+    slot: {
+      type: String,
       required: true,
     },
-    endTime: {
-      type: String, // e.g. "20:00"
-      required: true,
-    },
-    totalPrice: {
+    hours: {
       type: Number,
-      required: true,
+      default: 1,
     },
     status: {
       type: String,
-      enum: ["pending", "confirmed", "cancelled"],
-      default: "confirmed",
+      enum: ["Pending", "Confirmed", "Cancelled"],
+      default: "Confirmed",
     },
   },
   { timestamps: true }
 );
 
-module.exports = mongoose.model("Booking", bookingSchema);
+const Booking = mongoose.model("Booking", bookingSchema);
+
+export default Booking;

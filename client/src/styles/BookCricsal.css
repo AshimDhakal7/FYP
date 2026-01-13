@@ -1,0 +1,78 @@
+.bc-page {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #0b3d2e, #0f6a45, #cfe8db);
+    padding: 40px 16px;
+    font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+  }
+  
+  .bc-container { max-width: 900px; margin: auto; }
+  
+  .card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 20px;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.12);
+  }
+  
+  .bc-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 18px;
+  }
+  
+  .bc-header h1 { margin: 0; }
+  .bc-header p { margin: 6px 0 0; color: #6b7280; font-size: 13px; }
+  
+  .bc-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+  
+  .bc-btn {
+    display: inline-block;
+    padding: 10px 16px;
+    border-radius: 999px;
+    font-weight: 900;
+    text-decoration: none;
+    border: 1px solid transparent;
+    cursor: pointer;
+  }
+  
+  .bc-primary { background: #0f6a45; color: #fff; width: 100%; }
+  .bc-outline { border: 2px solid #0f6a45; color: #0f6a45; background: #fff; }
+  
+  .bc-form { display: grid; gap: 12px; }
+  .bc-form label { display: grid; gap: 6px; font-size: 13px; font-weight: 900; color: #0f172a; }
+  
+  .bc-form input, .bc-form select {
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid #e5e7eb;
+    outline: none;
+    font-size: 13px;
+  }
+  
+  .bc-form input:focus, .bc-form select:focus {
+    border-color: rgba(15,106,69,0.55);
+    box-shadow: 0 0 0 4px rgba(15,106,69,0.10);
+  }
+  
+  .bc-msg {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #b91c1c;
+    padding: 10px 12px;
+    border-radius: 12px;
+    font-weight: 800;
+  }
+  
+  .bc-note { font-size: 12.5px; color: #6b7280; margin-top: 6px; }
+  
+  .bc-footer {
+    margin-top: 18px;
+    text-align: center;
+    color: #fff;
+    font-size: 13px;
+  }
+  
+  .bc-footer a { color: #fff; font-weight: 800; }
+  

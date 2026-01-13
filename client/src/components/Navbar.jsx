@@ -1,43 +1,71 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import "../styles/navbar.css";
+
 
 export default function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
   const [open, setOpen] = useState(false);
 
-  useEffect(() => setOpen(false), [location.pathname, location.search]);
 
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+
+  const ROUTES = {
+    HOME: "/home",
+    LANDING: "/",
+    FIND: "/find-cricsal",
+    BOOKINGS: "/bookings",
+    PROFILE: "/profile",
+    LOGIN: "/login",
+    SIGNUP: "/signup",
+  };
+
+  useEffect(() => {
+    setOpen(false);
+    setMobileOpen(false);
+  }, [location.pathname, location.search]);
+
+  // Pages
   const isLanding = location.pathname === "/";
   const isAuthPage =
     location.pathname.startsWith("/login") ||
-    location.pathname.startsWith("/signup");
+    location.pathname.startsWith("/signup") ||
+    location.pathname.startsWith("/verify-otp") ||
+    location.pathname.startsWith("/forgot-password") ||
+    location.pathname.startsWith("/reset-password");
 
-  // robust login detection
-  const hasToken =
-    !!localStorage.getItem("token") ||
-    !!localStorage.getItem("accessToken") ||
-    !!localStorage.getItem("authToken") ||
-    !!localStorage.getItem("userToken");
+  // Robust login detection
+  const isLoggedIn = useMemo(() => {
+    const hasToken =
+      !!localStorage.getItem("token") ||
+      !!localStorage.getItem("accessToken") ||
+      !!localStorage.getItem("authToken") ||
+      !!localStorage.getItem("userToken");
 
-  let hasUser = false;
-  try {
-    const u = localStorage.getItem("user");
-    hasUser = !!u && u !== "null" && u !== "undefined";
-  } catch {
-    hasUser = false;
-  }
+    let hasUser = false;
+    try {
+      const u = localStorage.getItem("user");
+      hasUser = !!u && u !== "null" && u !== "undefined";
+    } catch {
+      hasUser = false;
+    }
+    return hasToken || hasUser;
+  }, [location.pathname]);
 
-  const isLoggedIn = hasToken || hasUser;
+  // Hide navbar on auth pages
+  if (isAuthPage) return null;
 
   const goSignupUser = () => {
     setOpen(false);
+    setMobileOpen(false);
     navigate("/signup?role=user");
   };
 
   const goSignupOwner = () => {
     setOpen(false);
+    setMobileOpen(false);
     navigate("/signup?role=owner");
   };
 
@@ -46,46 +74,114 @@ export default function Navbar() {
       localStorage.removeItem(k)
     );
     setOpen(false);
-    navigate("/", { replace: true }); // go back to landing after logout
+    setMobileOpen(false);
+    navigate("/", { replace: true });
   };
+
+  // ✅ Active class helper (works even if your CSS only styles ".nav-link.active")
+  const linkClass = ({ isActive }) => `nav-link ${isActive ? "active" : ""}`;
 
   return (
     <header className="nav" onMouseLeave={() => setOpen(false)}>
       <div className="nav-inner">
         {/* Brand */}
-        <Link to="/" className="nav-brand">
+        <Link
+          to={isLoggedIn ? ROUTES.HOME : ROUTES.LANDING}
+          className="nav-brand"
+          onClick={() => {
+            setOpen(false);
+            setMobileOpen(false);
+          }}
+        >
           <span className="nav-logo">CB</span>
           <span className="nav-name">CricBook</span>
         </Link>
 
-        {/* Links (hide on login/signup pages) */}
-        {!isAuthPage && (
-          <nav className="nav-links">
-            <NavLink to="/" className="nav-link">
-              Home
-            </NavLink>
+        {/* ✅ ESSENTIAL: Mobile hamburger (adds usability, does not modify existing links) */}
+        <button
+          type="button"
+          className="nav-hamburger"
+          aria-label="Toggle menu"
+          aria-expanded={mobileOpen}
+          onClick={() => setMobileOpen((v) => !v)}
+        >
+          ☰
+        </button>
 
-            <NavLink to="/find" className="nav-link">
-              Find Cricsal
-            </NavLink>
+        {/* LINKS */}
+        <nav className={`nav-links ${mobileOpen ? "open" : ""}`}>
+          {/* ✅ Landing links */}
+          {isLanding && (
+            <>
+              <NavLink to={ROUTES.LANDING} className={linkClass}>
+                Home
+              </NavLink>
 
-            {isLanding && (
-              <>
-                <a className="nav-link" href="#why">Why CricBook</a>
-                <a className="nav-link" href="#featured">Featured</a>
-                <a className="nav-link" href="#about">About</a>
-                <a className="nav-link" href="#contact">Contact</a>
-              </>
-            )}
-          </nav>
-        )}
+              {/* ✅ FIXED to match your App.jsx route */}
+              <NavLink to={ROUTES.FIND} className={linkClass}>
+                Find Cricsal
+              </NavLink>
 
-        {/* Actions */}
+              <a className="nav-link" href="#why">
+                Why CricBook
+              </a>
+              <a className="nav-link" href="#featured">
+                Featured
+              </a>
+              <a className="nav-link" href="#about">
+                About
+              </a>
+              <a className="nav-link" href="#contact">
+                Contact
+              </a>
+            </>
+          )}
+
+          {/* ✅ Logged-in app links (NO landing anchors, NO login/create) */}
+          {!isLanding && isLoggedIn && (
+            <>
+              <NavLink to={ROUTES.HOME} className={linkClass}>
+                Home
+              </NavLink>
+
+              {/* ✅ FIXED to match your App.jsx route */}
+              <NavLink to={ROUTES.FIND} className={linkClass}>
+                Find Cricsal
+              </NavLink>
+
+              <NavLink to={ROUTES.BOOKINGS} className={linkClass}>
+                My Bookings
+              </NavLink>
+
+              <NavLink to={ROUTES.PROFILE} className={linkClass}>
+                Profile
+              </NavLink>
+            </>
+          )}
+
+          {/* ✅ Not logged-in but on other pages (rare) */}
+          {!isLanding && !isLoggedIn && (
+            <>
+              <NavLink to={ROUTES.LANDING} className={linkClass}>
+                Home
+              </NavLink>
+
+              <NavLink to={ROUTES.FIND} className={linkClass}>
+                Find Cricsal
+              </NavLink>
+            </>
+          )}
+        </nav>
+
+        {/* ACTIONS */}
         <div className="nav-actions">
           {/* ✅ Landing page ALWAYS shows Login/Create */}
           {isLanding ? (
             <>
-              <button className="btn ghost" onClick={() => navigate("/login")}>
+              <button
+                className="btn ghost"
+                onClick={() => navigate(ROUTES.LOGIN)}
+              >
                 Login
               </button>
 
@@ -118,8 +214,8 @@ export default function Navbar() {
               </div>
             </>
           ) : (
-            /* ✅ Non-landing pages: show Logout only if logged in, else Login/Create */
             <>
+              {/* ✅ Non-landing pages: Logout only if logged in */}
               {isLoggedIn ? (
                 <button className="btn ghost" onClick={handleLogout}>
                   Logout
@@ -128,7 +224,7 @@ export default function Navbar() {
                 <>
                   <button
                     className="btn ghost"
-                    onClick={() => navigate("/login")}
+                    onClick={() => navigate(ROUTES.LOGIN)}
                   >
                     Login
                   </button>

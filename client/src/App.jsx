@@ -2,7 +2,7 @@ import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 
 import Header from "./components/Navbar";
-import Footer from "./components/Footer"; // ✅ ADD THIS
+import Footer from "./components/Footer";
 
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
@@ -11,8 +11,15 @@ import ResetPassword from "./pages/ResetPassword";
 import Signup from "./pages/Signup";
 import Dashboard from "./pages/Dashboard";
 import Home from "./pages/Home";
+import FindCricsal from "./pages/FindCricsal";
 import VerifyOtp from "./pages/VerifyOtp";
 import RequireAuth from "./components/RequireAuth";
+import UserProfile from "./pages/UserProfile";
+import Bookings from "./pages/Booking";
+import BookCricsal from "./pages/BookCricsal";
+import Support from "./pages/Support";
+
+
 
 export default function App() {
   return (
@@ -23,6 +30,7 @@ export default function App() {
           <Route path="/" element={<Landing />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
+          <Route path="/find-cricsal" element={<FindCricsal />} />
 
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password/:token" element={<ResetPassword />} />
@@ -38,6 +46,40 @@ export default function App() {
               </RequireAuth>
             }
           />
+          <Route
+            path="/profile"
+            element={
+              <RequireAuth>
+                <UserProfile />
+              </RequireAuth>
+            }
+          />
+          <Route
+  path="/bookings"
+  element={
+    <RequireAuth>
+      <Bookings />
+    </RequireAuth>
+  }
+  />
+  <Route
+    path="/book/:cricsalId"
+      element={
+        <RequireAuth>
+         <BookCricsal />
+          </RequireAuth>
+ }
+  />
+
+<Route
+  path="/support"
+  element={
+    <RequireAuth>
+      <Support />
+    </RequireAuth>
+  }
+/>
+
 
           {/* fallback */}
           <Route path="*" element={<Navigate to="/" replace />} />
