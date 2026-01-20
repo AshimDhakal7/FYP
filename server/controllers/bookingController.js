@@ -1,5 +1,6 @@
 import Booking from "../models/Booking.js";
 
+// POST /api/bookings  (Protected)
 export const createBooking = async (req, res) => {
   try {
     const { cricsalId, date, slot, hours } = req.body;
@@ -17,19 +18,22 @@ export const createBooking = async (req, res) => {
     });
 
     return res.status(201).json(booking);
-  } catch (error) {
+  } catch (err) {
+    console.error("createBooking error:", err.message);
     return res.status(500).json({ message: "Booking failed" });
   }
 };
 
+// GET /api/bookings/my  (Protected)
 export const getMyBookings = async (req, res) => {
   try {
-    const bookings = await Booking.find({ user: req.user._id })
-      .populate("cricsal")
-      .sort({ createdAt: -1 });
+    const bookings = await Booking.find({ user: req.user._id }).sort({
+      createdAt: -1,
+    });
 
     return res.json(bookings);
-  } catch (error) {
+  } catch (err) {
+    console.error("getMyBookings error:", err.message);
     return res.status(500).json({ message: "Could not load bookings" });
   }
 };

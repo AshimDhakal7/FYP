@@ -2,15 +2,12 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import "../styles/navbar.css";
 
-
 export default function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
   const [open, setOpen] = useState(false);
 
-
   const [mobileOpen, setMobileOpen] = useState(false);
-
 
   const ROUTES = {
     HOME: "/home",
@@ -52,6 +49,16 @@ export default function Navbar() {
       hasUser = false;
     }
     return hasToken || hasUser;
+  }, [location.pathname]);
+
+  // ✅ Profile avatar initial (ADDED)
+  const userInitial = useMemo(() => {
+    try {
+      const u = JSON.parse(localStorage.getItem("user"));
+      return (u?.name?.charAt(0) || "U").toUpperCase();
+    } catch {
+      return "U";
+    }
   }, [location.pathname]);
 
   // Hide navbar on auth pages
@@ -153,9 +160,7 @@ export default function Navbar() {
                 My Bookings
               </NavLink>
 
-              <NavLink to={ROUTES.PROFILE} className={linkClass}>
-                Profile
-              </NavLink>
+              {/* ✅ Profile link removed from here (it will be in avatar button beside Logout) */}
             </>
           )}
 
@@ -217,9 +222,22 @@ export default function Navbar() {
             <>
               {/* ✅ Non-landing pages: Logout only if logged in */}
               {isLoggedIn ? (
-                <button className="btn ghost" onClick={handleLogout}>
-                  Logout
-                </button>
+                <div className="nav-user">
+                  {/* ✅ Round profile button beside logout */}
+                  <button
+                    type="button"
+                    className="avatar-btn"
+                    onClick={() => navigate(ROUTES.PROFILE)}
+                    title="Profile"
+                    aria-label="Open profile"
+                  >
+                    <span className="avatar-circle">{userInitial}</span>
+                  </button>
+
+                  <button className="btn ghost" onClick={handleLogout}>
+                    Logout
+                  </button>
+                </div>
               ) : (
                 <>
                   <button

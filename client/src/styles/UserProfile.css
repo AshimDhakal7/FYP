@@ -104,4 +104,53 @@
       grid-template-columns: 1fr;
     }
   }
+
+  /* ===== FIX: Make Update Profile look like a real button ===== */
+.btn-primary,
+.btn-outline {
+  text-decoration: none;   /* removes underline for <Link> */
+  border: none;
+  cursor: pointer;
+}
+
+/* Better spacing + centered text */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  line-height: 1;
+  transition: all 0.25s ease;
+  box-shadow: 0 10px 20px rgba(15, 106, 69, 0.25);
+}
+
+.btn-primary:hover {
+  background: #0b5537;
+  transform: translateY(-2px);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+/* Outline button hover */
+.btn-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  transition: all 0.25s ease;
+  background: transparent;
+}
+
+.btn-outline:hover {
+  background: rgba(15, 106, 69, 0.08);
+}
+
+/* If any global styles are underlining all links, force remove here */
+.profile-page a.btn-primary,
+.profile-page a.btn-outline {
+  text-decoration: none !important;
+}
+
   

@@ -1,0 +1,72 @@
+.edit-page {
+    min-height: calc(100vh - 160px);
+    padding: 40px 20px;
+    background: radial-gradient(circle at top, #1e7b51 0%, #0c2a1f 60%, #061b14 100%);
+  }
+  
+  .edit-wrap { max-width: 950px; margin: 0 auto; }
+  
+  .edit-head {
+    background: white;
+    border-radius: 16px;
+    padding: 22px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 18px;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.18);
+  }
+  
+  .edit-head h1 { margin: 0; font-size: 34px; font-weight: 800; }
+  .muted { margin-top: 6px; color: #667; }
+  
+  .card.edit-card {
+    background: white;
+    border-radius: 16px;
+    padding: 22px 24px;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.18);
+    display: grid;
+    gap: 14px;
+  }
+  
+  .label { font-weight: 700; color: #133; display: grid; gap: 8px; }
+  
+  .input {
+    height: 44px;
+    border: 1px solid #d9e3dd;
+    border-radius: 12px;
+    padding: 0 12px;
+    outline: none;
+    font-size: 15px;
+  }
+  
+  .btn-primary {
+    height: 44px;
+    border: none;
+    border-radius: 999px;
+    background: #0f5f3f;
+    color: white;
+    font-weight: 800;
+    cursor: pointer;
+  }
+  
+  .btn-outline {
+    border: 2px solid #0f5f3f;
+    padding: 10px 14px;
+    border-radius: 999px;
+    text-decoration: none;
+    color: #0f5f3f;
+    font-weight: 800;
+  }
+  
+  .alert { border-radius: 12px; padding: 12px; font-weight: 700; }
+  .alert.error { background: #ffecec; border: 1px solid #ffb9b9; color: #b80000; }
+  .alert.success { background: #eafff3; border: 1px solid #a9f0c3; color: #0b6b3a; }
+  
+  /* ===== UPDATE PROFILE PAGE BACKGROUND FIX ===== */
+.update-profile-page {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #0b3d2e, #0f6a45, #cfe8db);
+    padding: 40px 16px;
+  }
+  

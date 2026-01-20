@@ -8,31 +8,16 @@ const bookingSchema = new mongoose.Schema(
       required: true,
     },
     cricsal: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Cricsal",
+      type: String, // because your cricsals are local (g1, g2...) right now
       required: true,
     },
-    date: {
-      type: String,
-      required: true,
-    },
-    slot: {
-      type: String,
-      required: true,
-    },
-    hours: {
-      type: Number,
-      default: 1,
-    },
-    status: {
-      type: String,
-      enum: ["Pending", "Confirmed", "Cancelled"],
-      default: "Confirmed",
-    },
+    date: { type: String, required: true },
+    slot: { type: String, required: true },
+    hours: { type: Number, default: 1 },
+    status: { type: String, default: "confirmed" },
   },
   { timestamps: true }
 );
 
 const Booking = mongoose.model("Booking", bookingSchema);
-
 export default Booking;

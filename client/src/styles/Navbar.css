@@ -251,6 +251,47 @@ html, body {
   color: rgba(11, 61, 46, 0.7);
 }
 
+/* ===== Profile avatar beside logout ===== */
+.nav-user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.avatar-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatar-circle {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: #fff;
+  font-weight: 700;
+  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: 0.2s ease;
+}
+
+.avatar-btn:hover .avatar-circle {
+  background: rgba(255, 255, 255, 0.26);
+  transform: scale(1.06);
+}
+
+.avatar-btn:active .avatar-circle {
+  transform: scale(0.98);
+}
+
 /* ============ Responsive ============ */
 @media (max-width: 900px) {
   .nav-inner {

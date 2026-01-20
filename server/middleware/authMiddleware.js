@@ -11,6 +11,21 @@ export const protect = async (req, res, next) => {
     if (fallbackToken) req.headers.authorization = `Bearer ${fallbackToken}`;
   }
 
+  // ✅ ESSENTIAL ADDITION: handle "Authorization: <token>" (without Bearer)
+  if (req.headers.authorization && !req.headers.authorization.startsWith("Bearer ")) {
+    req.headers.authorization = `Bearer ${req.headers.authorization}`;
+  }
+
+  // ✅ ESSENTIAL ADDITION: allow token in query for quick testing (optional)
+  if (!req.headers.authorization && req.query && req.query.token) {
+    req.headers.authorization = `Bearer ${req.query.token}`;
+  }
+
+  // ✅ ESSENTIAL ADDITION: allow token in cookies (optional)
+  if (!req.headers.authorization && req.cookies && req.cookies.token) {
+    req.headers.authorization = `Bearer ${req.cookies.token}`;
+  }
+
   if (req.headers.authorization && req.headers.authorization.startsWith("Bearer ")) {
     try {
       token = req.headers.authorization.split(" ")[1];

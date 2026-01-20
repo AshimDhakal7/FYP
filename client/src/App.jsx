@@ -1,9 +1,7 @@
 import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
-
 import Header from "./components/Navbar";
 import Footer from "./components/Footer";
-
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import ForgotPassword from "./pages/ForgotPassword";
@@ -18,7 +16,7 @@ import UserProfile from "./pages/UserProfile";
 import Bookings from "./pages/Booking";
 import BookCricsal from "./pages/BookCricsal";
 import Support from "./pages/Support";
-
+import EditProfile from "./pages/EditProfile";
 
 
 export default function App() {
@@ -62,6 +60,17 @@ export default function App() {
     </RequireAuth>
   }
   />
+
+<Route
+  path="/profile/edit"
+  element={
+    <RequireAuth>
+      <EditProfile />
+    </RequireAuth>
+  }
+/>
+<Route path="*" element={<Navigate to="/" replace />} />
+
   <Route
     path="/book/:cricsalId"
       element={
@@ -83,6 +92,9 @@ export default function App() {
 
           {/* fallback */}
           <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="/profile/edit" element={<EditProfile />} />
+
+
         </Routes>
       </main>
       <Footer />

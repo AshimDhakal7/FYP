@@ -52,9 +52,10 @@ export default function UserProfile() {
               </div>
 
               {/* ✅ you don't have /profile/edit route yet, so point to /dashboard for now */}
-              <Link to="/dashboard" className="btn-primary">
+              <Link to="/profile/edit" className="btn-primary">
                 Update Profile
               </Link>
+
             </div>
 
             <div className="card">

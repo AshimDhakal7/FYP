@@ -48,6 +48,8 @@
 
 
 import express from "express";
+import { protect } from "../middleware/authMiddleware.js";
+import { updateMe } from "../controllers/userController.js";
 import {
   registerUser,
   sendSignupOtp,
@@ -59,7 +61,10 @@ import {
   resetPasswordWithOtp,
 } from "../controllers/authController.js";
 
+
 const router = express.Router();
+
+router.put("/me", protect, updateMe);
 
 // ✅ Works with old frontend
 router.post("/register", registerUser);
