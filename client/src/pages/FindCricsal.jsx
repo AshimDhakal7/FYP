@@ -110,16 +110,16 @@ export default function FindCricsal() {
       );
     }
 
-    // area filter
+    // filter for the areas
     if (area !== "all") list = list.filter((g) => g.area === area);
 
-    // price filter
+    // filter for the prices
     if (maxPrice !== "all") {
       const max = Number(maxPrice);
       list = list.filter((g) => g.price <= max);
     }
 
-    // sort
+    // for hig-low or low-hight
     if (sort === "priceLow") list.sort((a, b) => a.price - b.price);
     if (sort === "priceHigh") list.sort((a, b) => b.price - a.price);
     if (sort === "rating") list.sort((a, b) => b.rating - a.rating);
