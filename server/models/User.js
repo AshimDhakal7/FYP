@@ -58,6 +58,11 @@ const userSchema = new mongoose.Schema(
       lowercase: true,
       trim: true,
     },
+    contactNumber: {
+      type: String,
+      default: "",
+    },
+    
 
     // ✅ Once OTP verified, set true
     isEmailVerified: { type: Boolean, default: false },

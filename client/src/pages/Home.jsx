@@ -5,6 +5,8 @@ import "../styles/home.css";
 
 export default function Home() {
   const navigate = useNavigate();
+  const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5001";
+  const [loadingBookings, setLoadingBookings] = useState(true);
 
   // Get user from localStorage
   const user = useMemo(() => {
@@ -14,12 +16,14 @@ export default function Home() {
       return null;
     }
   }, []);
+  
 
   // If not logged in -> go landing/login
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) navigate("/login", { replace: true });
   }, [navigate]);
+  
 
   // ===== Demo placeholders (replace with API later) =====
   const [search, setSearch] = useState("");

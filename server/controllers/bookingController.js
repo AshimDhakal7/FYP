@@ -1,39 +1,38 @@
 import Booking from "../models/Booking.js";
 
-// POST /api/bookings  (Protected)
+// ✅ Create booking
 export const createBooking = async (req, res) => {
   try {
-    const { cricsalId, date, slot, hours } = req.body;
+    const { cricsalId, date, timeSlot, duration } = req.body;
 
-    if (!cricsalId || !date || !slot) {
-      return res.status(400).json({ message: "Missing booking data" });
+    if (!cricsalId || !date || !timeSlot || !duration) {
+      return res.status(400).json({ message: "Missing booking fields" });
     }
 
     const booking = await Booking.create({
       user: req.user._id,
-      cricsal: cricsalId,
+      cricsalId,
       date,
-      slot,
-      hours: Number(hours) || 1,
+      timeSlot,
+      duration,
     });
 
-    return res.status(201).json(booking);
+    res.status(201).json(booking);
   } catch (err) {
-    console.error("createBooking error:", err.message);
-    return res.status(500).json({ message: "Booking failed" });
+    console.error(err);
+    res.status(500).json({ message: "Booking failed" });
   }
 };
 
-// GET /api/bookings/my  (Protected)
+// ✅ Load logged-in user's bookings
 export const getMyBookings = async (req, res) => {
   try {
-    const bookings = await Booking.find({ user: req.user._id }).sort({
-      createdAt: -1,
-    });
+    const bookings = await Booking.find({ user: req.user._id })
+      .sort({ createdAt: -1 });
 
-    return res.json(bookings);
+    res.json(bookings); // ⚠️ MUST return ARRAY
   } catch (err) {
-    console.error("getMyBookings error:", err.message);
-    return res.status(500).json({ message: "Could not load bookings" });
+    console.error(err);
+    res.status(500).json({ message: "Failed to load bookings" });
   }
 };

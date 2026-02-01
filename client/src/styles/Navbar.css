@@ -1,4 +1,4 @@
-/* ============ Navbar (Green Theme) ============ */
+/* ============ Navbar (Green Theme - CLEAN FIX) ============ */
 
 :root {
   --g-900: #0b3d2e;
@@ -6,8 +6,6 @@
   --g-700: #116a43;
   --g-600: #198754;
   --mint: #caffdd;
-  --mint-2: #7fffd4;
-  --white: #ffffff;
   --text: #eafff4;
   --text-d: #083021;
   --shadow: 0 10px 26px rgba(0, 0, 0, 0.18);
@@ -15,28 +13,40 @@
   --r: 14px;
 }
 
-/* full-width, no side gaps */
-html, body {
+/* Prevent side gaps */
+html,
+body {
   margin: 0;
   padding: 0;
 }
+/* ===== GLOBAL FIX FOR FIXED NAVBAR ===== */
+main {
+  padding-top: 72px; /* navbar height */
+  box-sizing: border-box;
+}
 
-/* Header wrapper */
+/* ===== Header wrapper ===== */
 .nav {
-  position: sticky;
+  position: fixed; /* ✅ consistent */
   top: 0;
-  z-index: 1000;
+  left: 0;
+  right: 0;
+  z-index: 9999;
   width: 100%;
+  height: 72px;
+
   background: linear-gradient(90deg, var(--g-900), var(--g-700), var(--g-600));
   border-bottom: 1px solid rgba(255, 255, 255, 0.16);
   box-shadow: var(--shadow);
 }
 
-/* Inner layout */
+/* ===== Inner layout ===== */
 .nav-inner {
-  max-width: 1280px;          /* keeps content centered while bg stays full-width */
+  max-width: 1280px;
   margin: 0 auto;
-  padding: 12px 18px;
+  height: 100%;
+  padding: 0 18px;
+
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -59,7 +69,6 @@ html, body {
   background: rgba(255, 255, 255, 0.12);
 }
 
-/* Interactive logo "CB" */
 .nav-logo {
   width: 34px;
   height: 34px;
@@ -69,7 +78,12 @@ html, body {
   font-weight: 900;
   letter-spacing: 0.5px;
   color: var(--text-d);
-  background: radial-gradient(circle at 30% 30%, var(--mint), #25d07c 60%, #0b3d2e 100%);
+  background: radial-gradient(
+    circle at 30% 30%,
+    var(--mint),
+    #25d07c 60%,
+    #0b3d2e 100%
+  );
   box-shadow: 0 0 16px rgba(124, 255, 208, 0.65);
   transition: transform 200ms ease, box-shadow 200ms ease;
 }
@@ -87,7 +101,6 @@ html, body {
   position: relative;
 }
 
-/* underline animation on CricBook text */
 .nav-name::after {
   content: "";
   position: absolute;
@@ -99,6 +112,7 @@ html, body {
   background: rgba(202, 255, 221, 0.9);
   transition: width 220ms ease;
 }
+
 .nav-brand:hover .nav-name::after {
   width: 100%;
 }
@@ -127,7 +141,6 @@ html, body {
   color: var(--mint);
 }
 
-/* NavLink active styling */
 .nav-link.active {
   background: rgba(202, 255, 221, 0.22);
   color: var(--mint);
@@ -148,17 +161,17 @@ html, body {
   cursor: pointer;
   font-weight: 800;
   font-size: 14px;
-  padding: 9px 14px;
+  height: 38px;
+  padding: 0 14px;
   border-radius: 999px;
-  transition: transform 160ms ease, background 160ms ease, color 160ms ease, box-shadow 160ms ease;
+  transition: transform 160ms ease, background 160ms ease, box-shadow 160ms ease;
   user-select: none;
 }
 
 .btn:active {
-  transform: translateY(0px) scale(0.99);
+  transform: scale(0.99);
 }
 
-/* Ghost (Login) */
 .btn.ghost {
   background: rgba(255, 255, 255, 0.12);
   color: var(--text);
@@ -170,7 +183,6 @@ html, body {
   transform: translateY(-1px);
 }
 
-/* White (Create Account) */
 .btn.white {
   background: rgba(202, 255, 221, 0.95);
   color: var(--text-d);
@@ -203,11 +215,10 @@ html, body {
   box-shadow: 0 14px 34px rgba(0, 0, 0, 0.22);
   border: 1px solid rgba(0, 0, 0, 0.06);
   overflow: hidden;
-  animation: pop 140ms ease-out;
   z-index: 2000;
+  animation: pop 140ms ease-out;
 }
 
-/* small pointer */
 .menu::before {
   content: "";
   position: absolute;
@@ -222,8 +233,14 @@ html, body {
 }
 
 @keyframes pop {
-  from { transform: translateY(-6px); opacity: 0.5; }
-  to   { transform: translateY(0); opacity: 1; }
+  from {
+    transform: translateY(-6px);
+    opacity: 0.5;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 .menu-item {
@@ -292,35 +309,7 @@ html, body {
   transform: scale(0.98);
 }
 
-/* ============ Responsive ============ */
-@media (max-width: 900px) {
-  .nav-inner {
-    max-width: 100%;
-  }
-  .nav-links {
-    gap: 4px;
-  }
-  .nav-link {
-    padding: 7px 10px;
-    font-size: 14px;
-  }
-}
-
-@media (max-width: 680px) {
-  .nav-inner {
-    padding: 10px 12px;
-    gap: 10px;
-  }
-
-  /* keep it usable on small screens: allow wrap */
-  .nav-links {
-    display: none; /* simplest: hide links on very small screens */
-  }
-
-  /* If you want links visible instead of hidden, replace above with:
-     .nav-links { display:flex; flex-wrap:wrap; }
-  */
-}
+/* ============ Hamburger / Responsive ============ */
 .nav-hamburger {
   display: none;
   background: transparent;
@@ -331,17 +320,31 @@ html, body {
 }
 
 @media (max-width: 900px) {
+  .nav-inner {
+    max-width: 100%;
+    padding: 0 12px;
+  }
+
   .nav-hamburger {
     display: block;
   }
+
   .nav-links {
     display: none;
   }
+
   .nav-links.open {
+    position: absolute;
+    top: 72px;
+    left: 0;
+    right: 0;
+    background: rgba(11, 61, 46, 0.98);
+    padding: 12px;
     display: flex;
     flex-direction: column;
     gap: 10px;
-    padding-top: 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
   }
 }
+.nav { height: 72px; }
 

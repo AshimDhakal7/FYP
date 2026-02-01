@@ -17,6 +17,12 @@ export default function Navbar() {
     PROFILE: "/profile",
     LOGIN: "/login",
     SIGNUP: "/signup",
+
+    // ✅ OWNER ROUTES (added)
+    OWNER_HOME: "/owner/home",
+    OWNER_GROUNDS: "/owner/grounds",
+    OWNER_BOOKINGS: "/owner/bookings",
+    OWNER_PROFILE: "/owner/profile",
   };
 
   useEffect(() => {
@@ -50,6 +56,17 @@ export default function Navbar() {
     }
     return hasToken || hasUser;
   }, [location.pathname]);
+
+  // ✅ read user + role safely (added)
+  const userObj = useMemo(() => {
+    try {
+      return JSON.parse(localStorage.getItem("user") || "null");
+    } catch {
+      return null;
+    }
+  }, [location.pathname]);
+
+  const isOwner = (userObj?.role || "").toLowerCase() === "owner";
 
   // ✅ Profile avatar initial (ADDED)
   const userInitial = useMemo(() => {
@@ -88,12 +105,16 @@ export default function Navbar() {
   // ✅ Active class helper (works even if your CSS only styles ".nav-link.active")
   const linkClass = ({ isActive }) => `nav-link ${isActive ? "active" : ""}`;
 
+  // ✅ decide where "Home" + Profile should go (added)
+  const HOME_ROUTE = isOwner ? ROUTES.OWNER_HOME : ROUTES.HOME;
+  const PROFILE_ROUTE = isOwner ? ROUTES.OWNER_PROFILE : ROUTES.PROFILE;
+
   return (
     <header className="nav" onMouseLeave={() => setOpen(false)}>
       <div className="nav-inner">
         {/* Brand */}
         <Link
-          to={isLoggedIn ? ROUTES.HOME : ROUTES.LANDING}
+          to={isLoggedIn ? HOME_ROUTE : ROUTES.LANDING}
           className="nav-brand"
           onClick={() => {
             setOpen(false);
@@ -147,18 +168,34 @@ export default function Navbar() {
           {/* ✅ Logged-in app links (NO landing anchors, NO login/create) */}
           {!isLanding && isLoggedIn && (
             <>
-              <NavLink to={ROUTES.HOME} className={linkClass}>
+              {/* ✅ Owner vs User Home */}
+              <NavLink to={HOME_ROUTE} className={linkClass}>
                 Home
               </NavLink>
 
-              {/* ✅ FIXED to match your App.jsx route */}
-              <NavLink to={ROUTES.FIND} className={linkClass}>
-                Find Cricsal
-              </NavLink>
+              {/* ✅ Owner menu */}
+              {isOwner ? (
+                <>
+                  <NavLink to={ROUTES.OWNER_GROUNDS} className={linkClass}>
+                    My Grounds
+                  </NavLink>
 
-              <NavLink to={ROUTES.BOOKINGS} className={linkClass}>
-                My Bookings
-              </NavLink>
+                  <NavLink to={ROUTES.OWNER_BOOKINGS} className={linkClass}>
+                    Bookings
+                  </NavLink>
+                </>
+              ) : (
+                <>
+                  {/* ✅ FIXED to match your App.jsx route */}
+                  <NavLink to={ROUTES.FIND} className={linkClass}>
+                    Find Cricsal
+                  </NavLink>
+
+                  <NavLink to={ROUTES.BOOKINGS} className={linkClass}>
+                    My Bookings
+                  </NavLink>
+                </>
+              )}
 
               {/* ✅ Profile link removed from here (it will be in avatar button beside Logout) */}
             </>
@@ -227,7 +264,7 @@ export default function Navbar() {
                   <button
                     type="button"
                     className="avatar-btn"
-                    onClick={() => navigate(ROUTES.PROFILE)}
+                    onClick={() => navigate(PROFILE_ROUTE)}
                     title="Profile"
                     aria-label="Open profile"
                   >

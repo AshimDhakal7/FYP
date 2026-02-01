@@ -4,7 +4,7 @@ import "../styles/EditProfile.css";
 
 export default function EditProfile() {
   const navigate = useNavigate();
-  const [form, setForm] = useState({ name: "", email: "" });
+  const [form, setForm] = useState({ name: "", email: "" , contactnumber: ""});
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState("");
   const [msg, setMsg] = useState("");
@@ -12,9 +12,9 @@ export default function EditProfile() {
   useEffect(() => {
     try {
       const u = JSON.parse(localStorage.getItem("user")) || {};
-      setForm({ name: u.name || "", email: u.email || "" });
+      setForm({ name: u.name || "", email: u.email || "", contactnumber: u.contactnumber || "",});
     } catch {
-      setForm({ name: "", email: "" });
+      setForm({ name: "", email: "", contactnumber: "" });
     }
   }, []);
 
@@ -83,6 +83,17 @@ export default function EditProfile() {
               className="input"
               name="email"
               value={form.email}
+              onChange={onChange}
+              required
+            />
+          </label>
+
+          <label className="label">
+            Contact Number
+            <input
+              className="input"
+              name="contactnumber"
+              value={form.contactnumber}
               onChange={onChange}
               required
             />

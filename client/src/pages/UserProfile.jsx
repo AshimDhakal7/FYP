@@ -47,6 +47,11 @@ export default function UserProfile() {
               </div>
 
               <div className="profile-row">
+                <span>Contact Number</span>
+                <strong>{user?.contactnumber || "9841333848"}</strong>
+              </div>
+
+              <div className="profile-row">
                 <span>Role</span>
                 <strong>{user?.role || "user"}</strong>
               </div>

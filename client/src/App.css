@@ -1,50 +1,35 @@
-/* ✅ FIX: make app full-width (remove side padding/gaps) */
-#root {
-  width: 100%;
-  max-width: none;
-  margin: 0;
-  padding: 0;
-  text-align: left;
+/* ===============================
+   PERFECT LAYOUT (NO GAPS / NO OVERLAP)
+   Works with fixed Navbar + Footer
+   =============================== */
 
-}
-
-html, body {
-  margin: 0;
-  padding: 0;
-}
-
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
-}
-
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
+   :root {
+    --nav-h: 72px; /* MUST match navbar height */
   }
-  to {
-    transform: rotate(360deg);
+  
+  html,
+  body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
   }
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
+  
+  #root {
+    min-height: 100%;
   }
-}
-
-.card {
-  padding: 2em;
-}
-
-.read-the-docs {
-  color: #888;
-}
+  
+  /* App wrapper */
+  .app-shell {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  /* ✅ MAIN FIX: reserve space for fixed navbar */
+  .app-main {
+    flex: 1;
+    padding-top: var(--nav-h);
+    box-sizing: border-box;
+    min-height: calc(100vh - var(--nav-h));
+  }
+  
