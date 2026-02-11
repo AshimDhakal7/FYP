@@ -1,35 +1,26 @@
-/* ===============================
-   PERFECT LAYOUT (NO GAPS / NO OVERLAP)
-   Works with fixed Navbar + Footer
-   =============================== */
 
-   :root {
-    --nav-h: 72px; /* MUST match navbar height */
-  }
-  
-  html,
-  body {
-    margin: 0;
-    padding: 0;
-    height: 100%;
-  }
-  
-  #root {
-    min-height: 100%;
-  }
-  
-  /* App wrapper */
-  .app-shell {
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-  }
-  
-  /* ✅ MAIN FIX: reserve space for fixed navbar */
-  .app-main {
-    flex: 1;
-    padding-top: var(--nav-h);
-    box-sizing: border-box;
-    min-height: calc(100vh - var(--nav-h));
-  }
-  
+  /* RESET */
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+/* Root */
+#root {
+  min-height: 100%;
+}
+
+/* Layout wrapper */
+.app-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Main content area */
+.app-main {
+  flex: 1;
+  padding-top: 64px; /* equal to navbar h-16 */
+}
