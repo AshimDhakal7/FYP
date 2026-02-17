@@ -46,6 +46,9 @@ import authRoutes from "./routes/authRoutes.js";
 import bookingRoutes from "./routes/bookingRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 
+import groundRoutes from "./routes/groundRoutes.js";
+
+
 dotenv.config();
 connectDB();
 
@@ -63,10 +66,13 @@ app.use(express.json());
 
 app.get("/", (req, res) => res.send("✅ CricBook API is running"));
 
+
 // ✅ Routes AFTER middleware
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/bookings", bookingRoutes);
+app.use("/api/grounds", groundRoutes);
+
 
 const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => console.log(`🚀 http://localhost:${PORT}`));

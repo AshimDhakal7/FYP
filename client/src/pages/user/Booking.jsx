@@ -7,46 +7,150 @@ export default function Bookings() {
   const [loading, setLoading] = useState(true);
   const [bookings, setBookings] = useState([]);
   const [error, setError] = useState("");
+  const [actionLoadingId, setActionLoadingId] = useState("");
+
+  // ✅ Modal state
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [selectedBooking, setSelectedBooking] = useState(null);
+
+  // ✅ Animation state (simple + clean)
+  const [animateIn, setAnimateIn] = useState(false);
+
+  // ✅ Always read latest token (important)
+  const getToken = () =>
+    localStorage.getItem("token") ||
+    localStorage.getItem("accessToken") ||
+    localStorage.getItem("authToken") ||
+    localStorage.getItem("userToken") ||
+    "";
+
+  // ✅ Always send token in both headers (backend may expect either)
+  const authHeaders = () => {
+    const token = getToken();
+    return {
+      Authorization: `Bearer ${token}`,
+      "x-auth-token": token,
+    };
+  };
+
+  const loadBookings = async () => {
+    setError("");
+    setLoading(true);
+
+    try {
+      const token = getToken();
+
+      if (!token) {
+        setBookings([]);
+        setError("Token missing. Please login again.");
+        return;
+      }
+
+      // ✅ backend route that exists: /api/bookings/my
+      const res = await fetch(`${API_BASE}/api/bookings/my`, {
+        headers: authHeaders(),
+      });
+
+      const data = await res.json().catch(() => null);
+
+      if (!res.ok) {
+        setBookings([]);
+        setError(
+          data?.message ||
+            `Could not load bookings (${res.status}). Please login again.`
+        );
+        return;
+      }
+
+      const list = Array.isArray(data) ? data : data?.bookings || [];
+      setBookings(list);
+    } catch (e) {
+      setError("Could not load bookings. (Network/CORS/backend issue)");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const load = async () => {
-      try {
-        const token =
-          localStorage.getItem("token") ||
-          localStorage.getItem("accessToken") ||
-          localStorage.getItem("authToken") ||
-          localStorage.getItem("userToken");
-
-        // If your API isn’t ready yet, page still works with empty list.
-        if (!token) {
-          setBookings([]);
-          setLoading(false);
-          return;
-        }
-
-        const res = await fetch(`${API_BASE}/api/bookings/my`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        if (!res.ok) {
-          // fallback to empty if endpoint not implemented yet
-          setBookings([]);
-          setLoading(false);
-          return;
-        }
-
-        const data = await res.json();
-        const list = Array.isArray(data) ? data : data.bookings || [];
-        setBookings(list);
-      } catch (e) {
-        setError("Could not load bookings.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    load();
+    loadBookings();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // ✅ Modal helpers
+  const openConfirm = (booking) => {
+    setSelectedBooking(booking);
+    setConfirmOpen(true);
+  };
+
+  const closeConfirm = () => {
+    if (actionLoadingId) return; // don't close while cancelling
+    setAnimateIn(false);
+    setTimeout(() => {
+      setConfirmOpen(false);
+      setSelectedBooking(null);
+    }, 160);
+  };
+
+  // ✅ Animate in when opened
+  useEffect(() => {
+    if (!confirmOpen) return;
+    const t = setTimeout(() => setAnimateIn(true), 10);
+    return () => clearTimeout(t);
+  }, [confirmOpen]);
+
+  // ✅ Close with ESC
+  useEffect(() => {
+    if (!confirmOpen) return;
+    const onKey = (e) => {
+      if (e.key === "Escape") closeConfirm();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [confirmOpen, actionLoadingId]);
+
+  // ✅ Cancel booking
+  const cancelBooking = async (bookingId) => {
+    if (!bookingId) return;
+
+    setActionLoadingId(bookingId);
+    setError("");
+
+    try {
+      const token = getToken();
+      if (!token) {
+        setError("Token missing. Please login again.");
+        return;
+      }
+
+      const res = await fetch(`${API_BASE}/api/bookings/${bookingId}/cancel`, {
+        method: "PATCH",
+        headers: authHeaders(),
+      });
+
+      const data = await res.json().catch(() => null);
+
+      if (!res.ok) {
+        setError(data?.message || `Cancel failed (${res.status})`);
+        return;
+      }
+
+      // ✅ update UI instantly
+      setBookings((prev) => prev.map((b) => (b._id === bookingId ? data : b)));
+
+      closeConfirm();
+    } catch (e) {
+      setError("Cancel failed (server error).");
+    } finally {
+      setActionLoadingId("");
+    }
+  };
+
+  const formatSlot = (b) => {
+    if (b?.startTime && b?.endTime) return `${b.startTime} - ${b.endTime}`;
+    if (b?.slot) return b.slot;
+    return "Time";
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -88,15 +192,23 @@ export default function Bookings() {
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <h2 className="text-lg font-bold text-gray-900">Bookings List</h2>
 
-            <Link
-              to="/profile"
-              className="text-sm font-semibold text-green-700 hover:underline"
-            >
-              Go to Profile →
-            </Link>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={loadBookings}
+                className="text-sm font-semibold text-gray-700 hover:underline"
+              >
+                Refresh
+              </button>
+
+              <Link
+                to="/profile"
+                className="text-sm font-semibold text-green-700 hover:underline"
+              >
+                Go to Profile →
+              </Link>
+            </div>
           </div>
 
-          {/* States */}
           {loading ? (
             <div className="mt-6 space-y-3">
               <div className="h-20 animate-pulse rounded-2xl bg-gray-100" />
@@ -140,31 +252,45 @@ export default function Bookings() {
                     ? "border-green-200 bg-green-50 text-green-700"
                     : status.includes("cancel")
                     ? "border-red-200 bg-red-50 text-red-700"
-                    : status.includes("reject")
-                    ? "border-red-200 bg-red-50 text-red-700"
                     : "border-yellow-200 bg-yellow-50 text-yellow-700";
+
+                const canCancel = status === "confirmed";
 
                 return (
                   <div
-                    key={b._id || `${b.date}-${b.slot}`}
+                    key={b._id}
                     className="rounded-2xl border border-gray-200 p-5 hover:shadow-sm transition"
                   >
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                       <div className="min-w-0">
                         <div className="text-base font-bold text-gray-900">
-                          {b?.ground?.name || b?.groundName || "Cricsal Booking"}
+                          Cricsal Booking{" "}
+                          <span className="text-gray-500 font-semibold">
+                            ({b?.cricsal})
+                          </span>
                         </div>
+
                         <div className="mt-1 text-sm text-gray-600">
-                          {b?.date || b?.startTime || "Date"} •{" "}
-                          {b?.slot || b?.time || "Time"}
+                          {b?.date} • {formatSlot(b)} • {b?.durationHours}h
                         </div>
                       </div>
 
-                      <span
-                        className={`inline-flex w-fit items-center justify-center rounded-full border px-3 py-1 text-xs font-semibold ${badgeClass}`}
-                      >
-                        {b?.status || "Pending"}
-                      </span>
+                      <div className="flex items-center gap-3">
+                        <span
+                          className={`inline-flex w-fit items-center justify-center rounded-full border px-3 py-1 text-xs font-semibold ${badgeClass}`}
+                        >
+                          {b?.status || "Pending"}
+                        </span>
+
+                        {canCancel && (
+                          <button
+                            onClick={() => openConfirm(b)}
+                            className="rounded-full border border-red-200 bg-white px-4 py-2 text-xs font-semibold text-red-700 hover:bg-red-50 transition"
+                          >
+                            Cancel
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 );
@@ -185,6 +311,114 @@ export default function Bookings() {
           </Link>
         </div>
       </div>
+
+      {/* ✅ Custom Cancel Popup */}
+      {confirmOpen && selectedBooking && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center px-4"
+          role="dialog"
+          aria-modal="true"
+        >
+          {/* Backdrop */}
+          <div
+            onClick={closeConfirm}
+            className={`absolute inset-0 bg-black/30 backdrop-blur-[2px] transition-opacity duration-200 ${
+              animateIn ? "opacity-100" : "opacity-0"
+            }`}
+          />
+
+          {/* Modal */}
+          <div
+            className={`relative w-full max-w-md rounded-3xl border border-gray-200 bg-white shadow-xl transition-all duration-200 ${
+              animateIn
+                ? "opacity-100 translate-y-0 scale-100"
+                : "opacity-0 translate-y-3 scale-[0.98]"
+            }`}
+          >
+            <div className="flex items-start gap-3 p-6">
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-red-50 text-red-700 ring-1 ring-red-100">
+                🗑️
+              </div>
+
+              <div className="min-w-0">
+                <h3 className="text-lg font-extrabold text-gray-900">
+                  Cancel booking?
+                </h3>
+                <p className="mt-1 text-sm text-gray-600">
+                  This will mark your booking as cancelled.
+                </p>
+              </div>
+
+              <button
+                onClick={closeConfirm}
+                className="ml-auto rounded-xl px-3 py-2 text-sm font-semibold text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition disabled:opacity-60 disabled:cursor-not-allowed"
+                aria-label="Close"
+                disabled={actionLoadingId === selectedBooking._id}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="px-6 pb-6">
+              <div className="rounded-2xl bg-gray-50 p-4 ring-1 ring-black/5">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-600">Cricsal</span>
+                  <span className="font-semibold text-gray-900">
+                    {selectedBooking.cricsal}
+                  </span>
+                </div>
+
+                <div className="mt-2 flex items-center justify-between text-sm">
+                  <span className="text-gray-600">Date</span>
+                  <span className="font-semibold text-gray-900">
+                    {selectedBooking.date}
+                  </span>
+                </div>
+
+                <div className="mt-2 flex items-center justify-between text-sm">
+                  <span className="text-gray-600">Time</span>
+                  <span className="font-semibold text-gray-900">
+                    {formatSlot(selectedBooking)}
+                  </span>
+                </div>
+
+                <div className="mt-2 flex items-center justify-between text-sm">
+                  <span className="text-gray-600">Duration</span>
+                  <span className="font-semibold text-gray-900">
+                    {selectedBooking.durationHours}h
+                  </span>
+                </div>
+              </div>
+
+              <div className="mt-5 flex gap-3">
+                <button
+                  type="button"
+                  onClick={closeConfirm}
+                  disabled={actionLoadingId === selectedBooking._id}
+                  className="flex-1 rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-900 hover:bg-gray-50 transition disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  Keep booking
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => cancelBooking(selectedBooking._id)}
+                  disabled={actionLoadingId === selectedBooking._id}
+                  className="flex-1 rounded-2xl bg-red-600 px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-red-700 transition disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  {actionLoadingId === selectedBooking._id
+                    ? "Cancelling..."
+                    : "Yes, cancel"}
+                </button>
+              </div>
+
+              <p className="mt-3 text-xs text-gray-500">
+                Tip: Press <span className="font-semibold">Esc</span> to close.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

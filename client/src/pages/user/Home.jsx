@@ -301,12 +301,112 @@
 //   );
 // }
 
-import React from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 
+const API_BASE = import.meta?.env?.VITE_API_BASE_URL || "http://localhost:5001";
+
+const toDateObj = (yyyyMMdd) => {
+  if (!yyyyMMdd) return null;
+  return new Date(`${yyyyMMdd}T00:00:00`);
+};
+
+const formatNiceDate = (yyyyMMdd) => {
+  if (!yyyyMMdd) return "";
+  const d = new Date(`${yyyyMMdd}T00:00:00`);
+  return d.toLocaleDateString(undefined, {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+};
+
 export default function Home() {
-  // Later: replace with API
-  const upcomingBookings = []; // keep your array
+  const [loadingBookings, setLoadingBookings] = useState(true);
+  const [upcomingBookings, setUpcomingBookings] = useState([]);
+  const [bookingErr, setBookingErr] = useState("");
+
+  const token = useMemo(() => {
+    return (
+      localStorage.getItem("token") ||
+      localStorage.getItem("accessToken") ||
+      localStorage.getItem("authToken") ||
+      localStorage.getItem("userToken") ||
+      ""
+    );
+  }, []);
+
+  useEffect(() => {
+    const loadBookings = async () => {
+      setBookingErr("");
+      setLoadingBookings(true);
+
+      try {
+        if (!token) {
+          setUpcomingBookings([]);
+          return;
+        }
+
+        // try both endpoints (use whichever exists)
+        const endpoints = [`${API_BASE}/api/bookings/me`, `${API_BASE}/api/bookings/my`];
+        let list = null;
+
+        for (const url of endpoints) {
+          const res = await fetch(url, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+
+          const data = await res.json().catch(() => null);
+          if (res.ok) {
+            list = Array.isArray(data) ? data : data?.bookings || [];
+            break;
+          }
+        }
+
+        if (!list) {
+          setUpcomingBookings([]);
+          setBookingErr("Could not load bookings (API route mismatch).");
+          return;
+        }
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        // ✅ get next 2 upcoming confirmed bookings
+        const upcomingConfirmed = list
+          .filter((b) => String(b?.status || "").toLowerCase() === "confirmed")
+          .map((b) => ({ ...b, _dateObj: toDateObj(b?.date) }))
+          .filter((b) => b._dateObj && b._dateObj >= today)
+          .sort((a, b) => {
+            // sort by date first, then by startTime
+            const d = a._dateObj - b._dateObj;
+            if (d !== 0) return d;
+            return String(a.startTime || "").localeCompare(String(b.startTime || ""));
+          })
+          .slice(0, 2)
+          .map((b) => ({
+            id: b._id,
+            cricsalId: b.cricsal,
+            venue: `Cricsal Booking (${b.cricsal})`,
+            date: formatNiceDate(b.date),
+            time: `${b.startTime} - ${b.endTime}`,
+            hours: b.durationHours,
+            _raw: b,
+          }));
+
+        setUpcomingBookings(upcomingConfirmed);
+      } catch (e) {
+        setUpcomingBookings([]);
+        setBookingErr("Could not load bookings.");
+      } finally {
+        setLoadingBookings(false);
+      }
+    };
+
+    loadBookings();
+  }, [token]);
+
   const featured = [
     {
       id: "1",
@@ -387,9 +487,9 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Upcoming booking (small + friendly) */}
         <div className="mt-8 grid gap-6 lg:grid-cols-3">
           <div className="lg:col-span-2">
+            {/* Upcoming booking */}
             <div className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
               <div className="flex items-center justify-between">
                 <div>
@@ -409,7 +509,20 @@ export default function Home() {
               </div>
 
               <div className="mt-5">
-                {upcomingBookings.length === 0 ? (
+                {loadingBookings ? (
+                  <div className="rounded-2xl border border-dashed border-gray-300 p-8 text-center">
+                    <div className="mx-auto h-12 w-12 animate-pulse rounded-full bg-gray-200" />
+                    <div className="mt-4 h-5 animate-pulse rounded bg-gray-200" />
+                    <div className="mt-2 h-4 animate-pulse rounded bg-gray-100" />
+                    <div className="mt-4 text-sm text-gray-500">
+                      Loading bookings...
+                    </div>
+                  </div>
+                ) : bookingErr ? (
+                  <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+                    {bookingErr}
+                  </div>
+                ) : upcomingBookings.length === 0 ? (
                   <div className="rounded-2xl border border-dashed border-gray-300 p-8 text-center">
                     <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green-50 text-green-700">
                       📅
@@ -431,7 +544,7 @@ export default function Home() {
                   </div>
                 ) : (
                   <div className="space-y-3">
-                    {upcomingBookings.slice(0, 1).map((b) => (
+                    {upcomingBookings.map((b) => (
                       <div
                         key={b.id}
                         className="flex flex-col gap-3 rounded-2xl border border-gray-200 p-5 sm:flex-row sm:items-center sm:justify-between"
@@ -444,16 +557,20 @@ export default function Home() {
                             {b.date} • {b.time} • {b.hours} hour(s)
                           </div>
                         </div>
+
                         <div className="flex gap-2">
                           <Link
-                            to={`/book/${b.cricsalId}`}
+                            to="/bookings"
                             className="rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-900 hover:bg-gray-50"
                           >
                             Details
                           </Link>
-                          <button className="rounded-full bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700">
+                          <Link
+                            to="/bookings"
+                            className="rounded-full bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700"
+                          >
                             Cancel
-                          </button>
+                          </Link>
                         </div>
                       </div>
                     ))}
@@ -534,11 +651,8 @@ export default function Home() {
 
           {/* Right column */}
           <div className="space-y-6">
-            {/* User shortcuts */}
             <div className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
-              <h3 className="text-base font-bold text-gray-900">
-                Shortcuts
-              </h3>
+              <h3 className="text-base font-bold text-gray-900">Shortcuts</h3>
               <div className="mt-4 space-y-2">
                 <Link
                   to="/profile"
@@ -561,14 +675,11 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Offers / tips */}
             <div className="rounded-3xl bg-gradient-to-br from-green-900 via-green-800 to-green-700 p-6 text-white shadow-sm">
               <div className="inline-flex rounded-full bg-white/10 px-3 py-1 text-xs font-semibold">
                 🎁 Tips & offers
               </div>
-              <h3 className="mt-3 text-base font-bold">
-                Get better slots
-              </h3>
+              <h3 className="mt-3 text-base font-bold">Get better slots</h3>
               <ul className="mt-3 space-y-2 text-sm text-green-100">
                 <li>✓ Book early for weekends</li>
                 <li>✓ Try off-peak hours for discounts</li>

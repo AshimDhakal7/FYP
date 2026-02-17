@@ -1,16 +1,17 @@
-// server/models/Ground.js
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
-const groundSchema = new mongoose.Schema(
+const GroundSchema = new mongoose.Schema(
   {
-    name: { type: String, required: true },
-    location: { type: String, required: true },
-    description: { type: String },
-    hourlyRate: { type: Number, required: true },
+    owner: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+
+    name: { type: String, required: true, trim: true },
+    area: { type: String, required: true, trim: true }, // city/area
+    pricePerHour: { type: Number, required: true },
+
+    features: { type: [String], default: [] }, // optional
     isActive: { type: Boolean, default: true },
-    images: [{ type: String }],
   },
   { timestamps: true }
 );
 
-module.exports = mongoose.model("Ground", groundSchema);
+export default mongoose.model("Ground", GroundSchema);

@@ -1,24 +1,20 @@
-// server/routes/groundRoutes.js
-const express = require("express");
+import express from "express";
+import { protect } from "../middleware/authMiddleware.js";
+import {
+  listGrounds,
+  createGround,
+  listMyGrounds,
+  deleteGround,
+} from "../controllers/groundController.js";
+
 const router = express.Router();
 
-const {
-  createGround,
-  getGrounds,
-  getGroundById,
-  updateGround,
-  deleteGround,
-} = require("../controllers/groundController");
+// public (users)
+router.get("/", listGrounds);
 
-const { protect } = require("../middleware/authMiddleware");
+// owner
+router.post("/", protect, createGround);
+router.get("/mine", protect, listMyGrounds);
+router.delete("/:id", protect, deleteGround);
 
-// Public routes
-router.get("/", getGrounds);        // GET /api/grounds
-router.get("/:id", getGroundById);  // GET /api/grounds/:id
-
-// Protected routes (any logged-in user for now)
-router.post("/", protect, createGround);      // POST /api/grounds
-router.put("/:id", protect, updateGround);    // PUT /api/grounds/:id
-router.delete("/:id", protect, deleteGround); // DELETE /api/grounds/:id
-
-module.exports = router;
+export default router;

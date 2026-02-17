@@ -230,6 +230,7 @@ import Bookings from "./pages/user/Booking";
 import RequireAuth from "./components/RequireAuth";
 
 import Profile from "./pages/user/UserProfile"; 
+import EditProfile from "./pages/user/EditProfile";
 
 import OwnerLayout from "./pages/owner/OwnerLayout";
 import OwnerDashboard from "./pages/owner/OwnerDashboard";
@@ -299,6 +300,15 @@ export default function App() {
             element={
               <RequireAuth>
                 <Bookings />
+              </RequireAuth>
+            }
+          />
+
+           <Route
+            path="/profile/edit"
+            element={
+              <RequireAuth>
+                <EditProfile />
               </RequireAuth>
             }
           />

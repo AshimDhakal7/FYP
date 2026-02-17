@@ -1,93 +1,88 @@
-// server/controllers/groundController.js
-const Ground = require("../models/Ground");
+import Ground from "../models/Ground.js";
 
-const createGround = async (req, res) => {
+// PUBLIC: list grounds (supports ?q= search)
+export const listGrounds = async (req, res) => {
   try {
-    const { name, location, description, hourlyRate, images } = req.body;
+    const q = (req.query.q || "").trim();
+
+    const filter = { isActive: true };
+
+    if (q) {
+      filter.$or = [
+        { name: { $regex: q, $options: "i" } },
+        { area: { $regex: q, $options: "i" } },
+        { features: { $in: [new RegExp(q, "i")] } },
+      ];
+    }
+
+    const grounds = await Ground.find(filter).sort({ createdAt: -1 });
+    return res.json(grounds);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+// OWNER: create ground
+export const createGround = async (req, res) => {
+  try {
+    const ownerId = req.user.id;
+    const { name, area, pricePerHour, features } = req.body;
+
+    if (!name || !area || pricePerHour === undefined) {
+      return res.status(400).json({ message: "Missing fields" });
+    }
 
     const ground = await Ground.create({
+      owner: ownerId,
       name,
-      location,
-      description,
-      hourlyRate,
-      images,
+      area,
+      pricePerHour: Number(pricePerHour),
+      features: Array.isArray(features)
+        ? features
+        : String(features || "")
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean),
+      isActive: true,
     });
 
     return res.status(201).json(ground);
   } catch (err) {
-    console.error("Create ground error:", err);
-    return res
-      .status(500)
-      .json({ message: "Server error", error: err.message });
+    console.error(err);
+    return res.status(500).json({ message: "Server error" });
   }
 };
 
-const getGrounds = async (req, res) => {
+// OWNER: list my grounds
+export const listMyGrounds = async (req, res) => {
   try {
-    const grounds = await Ground.find({ isActive: true }).sort({
-      createdAt: -1,
-    });
+    const ownerId = req.user.id;
+    const grounds = await Ground.find({ owner: ownerId }).sort({ createdAt: -1 });
     return res.json(grounds);
   } catch (err) {
-    console.error("Get grounds error:", err);
-    return res
-      .status(500)
-      .json({ message: "Server error", error: err.message });
+    console.error(err);
+    return res.status(500).json({ message: "Server error" });
   }
 };
 
-const getGroundById = async (req, res) => {
+// OWNER: delete my ground
+export const deleteGround = async (req, res) => {
   try {
-    const ground = await Ground.findById(req.params.id);
-    if (!ground)
-      return res.status(404).json({ message: "Ground not found" });
+    const ownerId = req.user.id;
+    const { id } = req.params;
 
-    return res.json(ground);
+    const ground = await Ground.findById(id);
+    if (!ground) return res.status(404).json({ message: "Ground not found" });
+
+    if (String(ground.owner) !== String(ownerId)) {
+      return res.status(403).json({ message: "Not allowed" });
+    }
+
+    await Ground.deleteOne({ _id: id });
+    return res.json({ message: "Deleted" });
   } catch (err) {
-    console.error("Get ground error:", err);
-    return res
-      .status(500)
-      .json({ message: "Server error", error: err.message });
+    console.error(err);
+    return res.status(500).json({ message: "Server error" });
   }
-};
-
-const updateGround = async (req, res) => {
-  try {
-    const ground = await Ground.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-    });
-
-    if (!ground)
-      return res.status(404).json({ message: "Ground not found" });
-
-    return res.json(ground);
-  } catch (err) {
-    console.error("Update ground error:", err);
-    return res
-      .status(500)
-      .json({ message: "Server error", error: err.message });
-  }
-};
-
-const deleteGround = async (req, res) => {
-  try {
-    const ground = await Ground.findByIdAndDelete(req.params.id);
-    if (!ground)
-      return res.status(404).json({ message: "Ground not found" });
-
-    return res.json({ message: "Ground removed" });
-  } catch (err) {
-    console.error("Delete ground error:", err);
-    return res
-      .status(500)
-      .json({ message: "Server error", error: err.message });
-  }
-};
-
-module.exports = {
-  createGround,
-  getGrounds,
-  getGroundById,
-  updateGround,
-  deleteGround,
 };

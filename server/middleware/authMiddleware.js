@@ -1,47 +1,64 @@
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 
-// Protect routes (requires Bearer token)
+// Protect routes (requires JWT)
 export const protect = async (req, res, next) => {
-  let token;
+  try {
+    // ✅ 1) Read token from multiple places
+    let token = null;
 
-  // ✅ ESSENTIAL: Allow alternative token headers (fallback)
-  if (!req.headers.authorization) {
-    const fallbackToken = req.headers["x-auth-token"] || req.headers.token;
-    if (fallbackToken) req.headers.authorization = `Bearer ${fallbackToken}`;
-  }
+    // Authorization: Bearer <token>
+    const authHeader = req.headers.authorization;
 
-  // ✅ ESSENTIAL ADDITION: handle "Authorization: <token>" (without Bearer)
-  if (req.headers.authorization && !req.headers.authorization.startsWith("Bearer ")) {
-    req.headers.authorization = `Bearer ${req.headers.authorization}`;
-  }
-
-  // ✅ ESSENTIAL ADDITION: allow token in query for quick testing (optional)
-  if (!req.headers.authorization && req.query && req.query.token) {
-    req.headers.authorization = `Bearer ${req.query.token}`;
-  }
-
-  // ✅ ESSENTIAL ADDITION: allow token in cookies (optional)
-  if (!req.headers.authorization && req.cookies && req.cookies.token) {
-    req.headers.authorization = `Bearer ${req.cookies.token}`;
-  }
-
-  if (req.headers.authorization && req.headers.authorization.startsWith("Bearer ")) {
-    try {
-      token = req.headers.authorization.split(" ")[1];
-
-      const decoded = jwt.verify(token, process.env.JWT_SECRET || "devsecret");
-
-      const user = await User.findById(decoded.id).select("-password");
-      if (!user) return res.status(401).json({ message: "User not found" });
-
-      req.user = user;
-      return next();
-    } catch (err) {
-      console.error("Protect middleware error:", err.message);
-      return res.status(401).json({ message: "Not authorized, token failed" });
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+      token = authHeader.split(" ")[1];
     }
-  }
 
-  return res.status(401).json({ message: "Not authorized, no token" });
+    // Authorization: <token> (without Bearer)
+    if (!token && authHeader && authHeader.trim().length > 0) {
+      token = authHeader.trim();
+    }
+
+    // x-auth-token: <token>
+    if (!token && req.headers["x-auth-token"]) {
+      token = req.headers["x-auth-token"];
+    }
+
+    // token: <token>
+    if (!token && req.headers.token) {
+      token = req.headers.token;
+    }
+
+    if (!token) {
+      return res.status(401).json({ message: "Not authorized, no token" });
+    }
+
+    // ✅ 2) Ensure JWT secret exists (NO silent fallback)
+    const secret = process.env.JWT_SECRET;
+    if (!secret) {
+      console.error("JWT_SECRET is missing in .env");
+      return res.status(500).json({ message: "Server misconfig: JWT_SECRET missing" });
+    }
+
+    // ✅ 3) Verify token
+    const decoded = jwt.verify(token, secret);
+
+    // ✅ 4) Support different payload shapes
+    const userId = decoded?.id || decoded?._id || decoded?.userId;
+    if (!userId) {
+      return res.status(401).json({ message: "Not authorized, invalid token payload" });
+    }
+
+    // ✅ 5) Attach user
+    const user = await User.findById(userId).select("-password");
+    if (!user) {
+      return res.status(401).json({ message: "User not found" });
+    }
+
+    req.user = user;
+    next();
+  } catch (err) {
+    console.error("Protect middleware error:", err.message);
+    return res.status(401).json({ message: "Not authorized, token failed" });
+  }
 };
