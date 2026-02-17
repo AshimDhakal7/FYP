@@ -305,62 +305,101 @@ import React from "react";
 import { Link } from "react-router-dom";
 
 export default function Home() {
-  // later replace with API bookings
-  const upcomingBookings = [];
+  // Later: replace with API
+  const upcomingBookings = []; // keep your array
+  const featured = [
+    {
+      id: "1",
+      name: "KTM Indoor Arena",
+      location: "Bhaktapur",
+      price: "Rs 1,500/hr",
+      tags: ["Indoor", "Parking", "Lights"],
+    },
+    {
+      id: "2",
+      name: "Green Turf Center",
+      location: "Lalitpur",
+      price: "Rs 1,200/hr",
+      tags: ["Indoor", "Beginner Friendly"],
+    },
+    {
+      id: "3",
+      name: "Pro Cricsal Hub",
+      location: "Kathmandu",
+      price: "Rs 1,800/hr",
+      tags: ["Premium", "Shower", "Cafe"],
+    },
+  ];
 
   return (
-    <div className="bg-gray-50">
+    <div className="min-h-screen bg-gray-50">
       <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
-        {/* Header */}
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <h1 className="text-2xl font-extrabold text-gray-900">
-              Welcome 👋
-            </h1>
-            <p className="mt-1 text-sm text-gray-600">
-              Here’s a quick overview of your CricBook activity.
-            </p>
+        {/* Top hero */}
+        <div className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
+          <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <div className="inline-flex items-center gap-2 rounded-full bg-green-50 px-3 py-1 text-xs font-semibold text-green-700">
+                ⚡ Book in seconds
+              </div>
+
+              <h1 className="mt-3 text-2xl font-extrabold text-gray-900 sm:text-3xl">
+                Find and book your next cricsal
+              </h1>
+
+              <p className="mt-2 max-w-xl text-sm text-gray-600">
+                Search nearby indoor cricket venues, pick a slot, and get instant
+                confirmation.
+              </p>
+            </div>
+
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <Link
+                to="/find-cricsal"
+                className="rounded-full bg-green-600 px-6 py-3 text-center text-sm font-semibold text-white shadow-sm hover:bg-green-700 transition"
+              >
+                Find Cricsal
+              </Link>
+              <Link
+                to="/bookings"
+                className="rounded-full border border-gray-200 bg-white px-6 py-3 text-center text-sm font-semibold text-gray-900 hover:bg-gray-50 transition"
+              >
+                My Bookings
+              </Link>
+            </div>
           </div>
 
-          <div className="flex gap-2">
-            <Link
-              to="/find-cricsal"
-              className="rounded-full bg-green-600 px-5 py-2 text-sm font-semibold text-white hover:bg-green-700 transition"
-            >
-              Find Cricsal
-            </Link>
-            <Link
-              to="/bookings"
-              className="rounded-full border border-gray-200 bg-white px-5 py-2 text-sm font-semibold text-gray-900 hover:bg-gray-50 transition"
-            >
-              My Bookings
-            </Link>
+          {/* search-like bar (UI only) */}
+          <div className="mt-6 grid gap-3 sm:grid-cols-3">
+            <div className="rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-600">
+              📍 Location
+              <div className="mt-1 font-semibold text-gray-900">
+                Near me (soon)
+              </div>
+            </div>
+            <div className="rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-600">
+              🗓 Date
+              <div className="mt-1 font-semibold text-gray-900">Choose (soon)</div>
+            </div>
+            <div className="rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-600">
+              ⏰ Time
+              <div className="mt-1 font-semibold text-gray-900">Select (soon)</div>
+            </div>
           </div>
         </div>
 
-        {/* Stats */}
-        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <Stat title="Upcoming" value="0" sub="Bookings" />
-          <Stat title="Favorites" value="0" sub="Saved venues" />
-          <Stat title="Rating" value="4.8★" sub="Community avg" />
-          <Stat title="Support" value="24/7" sub="Email/Chat" />
-        </div>
-
-        {/* Main content */}
+        {/* Upcoming booking (small + friendly) */}
         <div className="mt-8 grid gap-6 lg:grid-cols-3">
-          {/* Upcoming bookings */}
           <div className="lg:col-span-2">
-            <div className="rounded-2xl border border-gray-200 bg-white shadow-sm">
-              <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4">
+            <div className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
+              <div className="flex items-center justify-between">
                 <div>
                   <h2 className="text-lg font-bold text-gray-900">
-                    Upcoming bookings
+                    Your next booking
                   </h2>
-                  <p className="text-sm text-gray-600">
-                    Your next sessions will show here.
+                  <p className="mt-1 text-sm text-gray-600">
+                    Quick access to your upcoming session.
                   </p>
                 </div>
-
                 <Link
                   to="/bookings"
                   className="text-sm font-semibold text-green-700 hover:underline"
@@ -369,43 +408,42 @@ export default function Home() {
                 </Link>
               </div>
 
-              <div className="px-6 py-6">
+              <div className="mt-5">
                 {upcomingBookings.length === 0 ? (
-                  <div className="rounded-2xl border border-dashed border-gray-300 p-10 text-center">
+                  <div className="rounded-2xl border border-dashed border-gray-300 p-8 text-center">
                     <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green-50 text-green-700">
                       📅
                     </div>
-                    <h3 className="mt-4 text-lg font-bold text-gray-900">
+                    <h3 className="mt-4 text-base font-bold text-gray-900">
                       No bookings yet
                     </h3>
                     <p className="mt-1 text-sm text-gray-600">
-                      Find a cricsal and book your first session in seconds.
+                      Let’s book your first cricsal — it’s super easy.
                     </p>
-                    <div className="mt-5">
+                    <div className="mt-4">
                       <Link
                         to="/find-cricsal"
                         className="inline-flex rounded-full bg-green-600 px-5 py-2 text-sm font-semibold text-white hover:bg-green-700"
                       >
-                        Find Cricsal
+                        Book now
                       </Link>
                     </div>
                   </div>
                 ) : (
                   <div className="space-y-3">
-                    {upcomingBookings.map((b) => (
+                    {upcomingBookings.slice(0, 1).map((b) => (
                       <div
                         key={b.id}
-                        className="flex flex-col gap-2 rounded-xl border border-gray-200 p-4 sm:flex-row sm:items-center sm:justify-between"
+                        className="flex flex-col gap-3 rounded-2xl border border-gray-200 p-5 sm:flex-row sm:items-center sm:justify-between"
                       >
                         <div>
-                          <div className="font-semibold text-gray-900">
+                          <div className="text-sm font-semibold text-gray-900">
                             {b.venue}
                           </div>
-                          <div className="text-sm text-gray-600">
+                          <div className="mt-1 text-sm text-gray-600">
                             {b.date} • {b.time} • {b.hours} hour(s)
                           </div>
                         </div>
-
                         <div className="flex gap-2">
                           <Link
                             to={`/book/${b.cricsalId}`}
@@ -423,42 +461,118 @@ export default function Home() {
                 )}
               </div>
             </div>
-          </div>
 
-          {/* Right side */}
-          <div className="space-y-6">
-            {/* Quick actions */}
-            <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-              <h3 className="text-base font-bold text-gray-900">Quick actions</h3>
-              <div className="mt-4 space-y-2">
+            {/* Featured cricsals */}
+            <div className="mt-6 rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
+              <div className="flex items-end justify-between">
+                <div>
+                  <h2 className="text-lg font-bold text-gray-900">
+                    Featured cricsals
+                  </h2>
+                  <p className="mt-1 text-sm text-gray-600">
+                    Popular venues users love right now.
+                  </p>
+                </div>
                 <Link
                   to="/find-cricsal"
-                  className="block rounded-xl bg-green-600 px-4 py-3 text-center text-sm font-semibold text-white hover:bg-green-700"
+                  className="text-sm font-semibold text-green-700 hover:underline"
                 >
-                  Book a cricsal
+                  See more
                 </Link>
+              </div>
+
+              <div className="mt-5 grid gap-4 sm:grid-cols-2">
+                {featured.map((f) => (
+                  <div
+                    key={f.id}
+                    className="rounded-2xl border border-gray-200 p-5 hover:shadow-sm transition bg-white"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <div className="text-base font-bold text-gray-900">
+                          {f.name}
+                        </div>
+                        <div className="mt-1 text-sm text-gray-600">
+                          📍 {f.location}
+                        </div>
+                      </div>
+                      <div className="rounded-full bg-green-50 px-3 py-1 text-xs font-bold text-green-700">
+                        {f.price}
+                      </div>
+                    </div>
+
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {f.tags.map((t) => (
+                        <span
+                          key={t}
+                          className="rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-xs font-semibold text-gray-700"
+                        >
+                          {t}
+                        </span>
+                      ))}
+                    </div>
+
+                    <div className="mt-4 flex gap-2">
+                      <Link
+                        to="/find-cricsal"
+                        className="flex-1 rounded-xl bg-green-600 px-4 py-2 text-center text-sm font-semibold text-white hover:bg-green-700"
+                      >
+                        Book
+                      </Link>
+                      <Link
+                        to="/find-cricsal"
+                        className="flex-1 rounded-xl border border-gray-200 bg-white px-4 py-2 text-center text-sm font-semibold text-gray-900 hover:bg-gray-50"
+                      >
+                        Details
+                      </Link>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Right column */}
+          <div className="space-y-6">
+            {/* User shortcuts */}
+            <div className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
+              <h3 className="text-base font-bold text-gray-900">
+                Shortcuts
+              </h3>
+              <div className="mt-4 space-y-2">
                 <Link
                   to="/profile"
                   className="block rounded-xl border border-gray-200 bg-white px-4 py-3 text-center text-sm font-semibold text-gray-900 hover:bg-gray-50"
                 >
-                  View profile
+                  My profile
                 </Link>
                 <Link
-                  to="/support"
+                  to="/bookings"
                   className="block rounded-xl border border-gray-200 bg-white px-4 py-3 text-center text-sm font-semibold text-gray-900 hover:bg-gray-50"
                 >
-                  Contact support
+                  My bookings
+                </Link>
+                <Link
+                  to="/find-cricsal"
+                  className="block rounded-xl bg-green-600 px-4 py-3 text-center text-sm font-semibold text-white hover:bg-green-700"
+                >
+                  Find cricsals
                 </Link>
               </div>
             </div>
 
-            {/* Tip card */}
-            <div className="rounded-2xl bg-gradient-to-br from-green-900 via-green-800 to-green-700 p-6 text-white shadow-sm">
-              <h3 className="text-base font-bold">Tips to get better slots</h3>
+            {/* Offers / tips */}
+            <div className="rounded-3xl bg-gradient-to-br from-green-900 via-green-800 to-green-700 p-6 text-white shadow-sm">
+              <div className="inline-flex rounded-full bg-white/10 px-3 py-1 text-xs font-semibold">
+                🎁 Tips & offers
+              </div>
+              <h3 className="mt-3 text-base font-bold">
+                Get better slots
+              </h3>
               <ul className="mt-3 space-y-2 text-sm text-green-100">
                 <li>✓ Book early for weekends</li>
-                <li>✓ Compare venues by location</li>
-                <li>✓ Save your favorite cricsals</li>
+                <li>✓ Try off-peak hours for discounts</li>
+                <li>✓ Save your favorite venues</li>
               </ul>
               <div className="mt-4 text-xs text-green-200">
                 CricBook • Indoor cricket booking platform
@@ -467,16 +581,6 @@ export default function Home() {
           </div>
         </div>
       </div>
-    </div>
-  );
-}
-
-function Stat({ title, value, sub }) {
-  return (
-    <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-      <div className="text-sm font-semibold text-gray-600">{title}</div>
-      <div className="mt-1 text-2xl font-extrabold text-gray-900">{value}</div>
-      <div className="mt-1 text-sm text-gray-500">{sub}</div>
     </div>
   );
 }

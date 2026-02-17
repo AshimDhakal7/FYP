@@ -125,7 +125,7 @@
 // }
 import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "../components/Footer"
+// import "../components/Footer"
 
 export default function Landing() {
   const navigate = useNavigate();
@@ -173,7 +173,8 @@ export default function Landing() {
         </div>
 
         <div className="relative mx-auto max-w-6xl px-4 py-14 sm:py-16">
-          <div className="max-w-2xl">
+        <div className="w-full max-w-6xl">
+
             <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
               Book Indoor Cricket in Seconds
             </h1>
@@ -183,109 +184,117 @@ export default function Landing() {
 
             {/* SEARCH CARD */}
             <form
-              onSubmit={onSearch}
-              className="mt-8 rounded-2xl bg-white p-4 shadow-lg ring-1 ring-black/5"
-            >
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
-                <div className="lg:col-span-2">
-                  <label className="block text-xs font-semibold text-gray-700">
-                    Location
-                  </label>
-                  <input
-                    value={location}
-                    onChange={(e) => setLocation(e.target.value)}
-                    placeholder="Kathmandu, Lalitpur..."
-                    className="mt-1 w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 outline-none focus:border-green-600"
-                  />
-                </div>
+  onSubmit={onSearch}
+  className="mt-8 w-full max-w-6xl rounded-2xl bg-white p-6 shadow-lg ring-1 ring-black/5"
+>
+  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-6">
 
-                <div>
-                  <label className="block text-xs font-semibold text-gray-700">
-                    Date
-                  </label>
-                  <input
-                    value={date}
-                    onChange={(e) => setDate(e.target.value)}
-                    type="date"
-                    className="mt-1 w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 outline-none focus:border-green-600"
-                  />
-                </div>
+    {/* Location */}
+    <div className="lg:col-span-2">
+      <label className="block text-xs font-semibold text-gray-700">
+        Location
+      </label>
+      <input
+        value={location}
+        onChange={(e) => setLocation(e.target.value)}
+        placeholder="Kathmandu, Lalitpur..."
+        className="mt-1 w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 outline-none focus:border-green-600 focus:ring-2 focus:ring-green-100"
+      />
+    </div>
 
-                <div>
-                  <label className="block text-xs font-semibold text-gray-700">
-                    Time
-                  </label>
-                  <select
-                    value={timeSlot}
-                    onChange={(e) => setTimeSlot(e.target.value)}
-                    className="mt-1 w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 outline-none focus:border-green-600"
-                  >
-                    <option value="">Select</option>
-                    <option value="06:00">06:00</option>
-                    <option value="08:00">08:00</option>
-                    <option value="10:00">10:00</option>
-                    <option value="12:00">12:00</option>
-                    <option value="14:00">14:00</option>
-                    <option value="16:00">16:00</option>
-                    <option value="18:00">18:00</option>
-                    <option value="20:00">20:00</option>
-                  </select>
-                </div>
+    {/* Date */}
+    <div>
+      <label className="block text-xs font-semibold text-gray-700">
+        Date
+      </label>
+      <input
+        value={date}
+        onChange={(e) => setDate(e.target.value)}
+        type="date"
+        className="mt-1 w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 outline-none focus:border-green-600 focus:ring-2 focus:ring-green-100"
+      />
+    </div>
 
-                <div className="flex items-end gap-3">
-                  <div className="w-28">
-                    <label className="block text-xs font-semibold text-gray-700">
-                      Hours
-                    </label>
-                    <select
-                      value={hours}
-                      onChange={(e) => setHours(e.target.value)}
-                      className="mt-1 w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 outline-none focus:border-green-600"
-                    >
-                      <option value="1">1 hr</option>
-                      <option value="2">2 hrs</option>
-                      <option value="3">3 hrs</option>
-                    </select>
-                  </div>
+    {/* Time */}
+    <div>
+      <label className="block text-xs font-semibold text-gray-700">
+        Time
+      </label>
+      <select
+        value={timeSlot}
+        onChange={(e) => setTimeSlot(e.target.value)}
+        className="mt-1 w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 outline-none focus:border-green-600 focus:ring-2 focus:ring-green-100"
+      >
+        <option value="">Select</option>
+        <option value="06:00">06:00</option>
+        <option value="08:00">08:00</option>
+        <option value="10:00">10:00</option>
+        <option value="12:00">12:00</option>
+        <option value="14:00">14:00</option>
+        <option value="16:00">16:00</option>
+        <option value="18:00">18:00</option>
+        <option value="20:00">20:00</option>
+      </select>
+    </div>
 
-                  <button
-                    type="submit"
-                    className="flex-1 rounded-xl bg-green-700 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-green-800 active:scale-[0.99] transition"
-                  >
-                    Search
-                  </button>
-                </div>
-              </div>
+    {/* Hours */}
+    <div>
+      <label className="block text-xs font-semibold text-gray-700">
+        Hours
+      </label>
+      <select
+        value={hours}
+        onChange={(e) => setHours(e.target.value)}
+        className="mt-1 w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 outline-none focus:border-green-600 focus:ring-2 focus:ring-green-100"
+      >
+        <option value="1">1 hr</option>
+        <option value="2">2 hrs</option>
+        <option value="3">3 hrs</option>
+      </select>
+    </div>
 
-              <div className="mt-3 flex flex-wrap items-center gap-2">
-                <span className="rounded-full bg-green-50 px-3 py-1 text-xs font-medium text-green-700">
-                  Instant confirmation
-                </span>
-                <span className="rounded-full bg-green-50 px-3 py-1 text-xs font-medium text-green-700">
-                  Verified venues
-                </span>
-                <span className="rounded-full bg-green-50 px-3 py-1 text-xs font-medium text-green-700">
-                  Easy reschedule
-                </span>
+    {/* Search Button */}
+    <div className="flex items-end">
+      <button
+        type="submit"
+        className="w-full rounded-xl bg-green-700 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-green-800 active:scale-[0.98] transition"
+      >
+        Search
+      </button>
+    </div>
+  </div>
 
-                <div className="ml-auto flex gap-2">
-                  <button
-                    type="button"
-                    onClick={() => navigate("/login")}
-                    className="rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-900 hover:bg-gray-50 transition"
-                  >
-                    Book Now
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => navigate("/signup")}
-                    className="rounded-xl bg-green-700 px-4 py-2 text-sm font-semibold text-white hover:bg-green-800 transition"
-                  >
-                    Create Account
-                  </button>
-                </div>
-              </div>
-            </form>
+  {/* Badges + Actions */}
+  <div className="mt-5 flex flex-wrap items-center gap-2">
+    <span className="rounded-full bg-green-50 px-3 py-1 text-xs font-medium text-green-700">
+      Instant confirmation
+    </span>
+    <span className="rounded-full bg-green-50 px-3 py-1 text-xs font-medium text-green-700">
+      Verified venues
+    </span>
+    <span className="rounded-full bg-green-50 px-3 py-1 text-xs font-medium text-green-700">
+      Easy reschedule
+    </span>
+
+    <div className="ml-auto flex gap-3">
+      <button
+        type="button"
+        onClick={() => navigate("/login")}
+        className="rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-900 hover:bg-gray-50 transition"
+      >
+        Book Now
+      </button>
+      <button
+        type="button"
+        onClick={() => navigate("/signup")}
+        className="rounded-xl bg-green-700 px-4 py-2 text-sm font-semibold text-white hover:bg-green-800 transition"
+      >
+        Create Account
+      </button>
+    </div>
+  </div>
+</form>
+
 
             {/* TRUST STATS */}
             <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-4">
