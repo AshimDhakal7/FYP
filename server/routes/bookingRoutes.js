@@ -39,10 +39,12 @@ router.post("/", protect, createBooking);
 
 // My bookings (protected)
 router.get("/my", protect, getMyBookings);
+router.get("/me", protect, getMyBookings);   
+router.post("/", protect, createBooking);
 
 // Cancel booking (protected)
-router.put("/:id/cancel", protect, cancelBooking);
-
+// router.put("/:id/cancel", protect, cancelBooking);
+router.patch("/:id/cancel", protect, cancelBooking);
 // Availability (optional public)
 router.get("/booked-slots", getBookedSlots);
 

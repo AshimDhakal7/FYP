@@ -63,6 +63,7 @@ app.use(
 );
 
 app.use(express.json());
+app.use("/api/bookings", bookingRoutes);
 
 app.get("/", (req, res) => res.send("✅ CricBook API is running"));
 

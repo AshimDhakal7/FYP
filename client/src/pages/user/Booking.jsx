@@ -46,8 +46,8 @@ export default function Bookings() {
         return;
       }
 
-      // ✅ backend route that exists: /api/bookings/my
-      const res = await fetch(`${API_BASE}/api/bookings/my`, {
+      // ✅ backend route that exists: /api/bookings/me
+      const res = await fetch(`${API_BASE}/api/bookings/me`, {
         headers: authHeaders(),
       });
 
@@ -150,6 +150,13 @@ export default function Bookings() {
     if (b?.startTime && b?.endTime) return `${b.startTime} - ${b.endTime}`;
     if (b?.slot) return b.slot;
     return "Time";
+  };
+
+  // ✅ FIX: render cricsal safely (string id OR populated object)
+  const cricsalLabel = (c) => {
+    if (!c) return "Cricsal";
+    if (typeof c === "string") return c; // not populated
+    return c.name || c.title || c.area || c._id || "Cricsal"; // populated object
   };
 
   return (
@@ -266,7 +273,7 @@ export default function Bookings() {
                         <div className="text-base font-bold text-gray-900">
                           Cricsal Booking{" "}
                           <span className="text-gray-500 font-semibold">
-                            ({b?.cricsal})
+                            ({cricsalLabel(b?.cricsal)})
                           </span>
                         </div>
 
@@ -364,7 +371,7 @@ export default function Bookings() {
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-gray-600">Cricsal</span>
                   <span className="font-semibold text-gray-900">
-                    {selectedBooking.cricsal}
+                    {cricsalLabel(selectedBooking.cricsal)}
                   </span>
                 </div>
 

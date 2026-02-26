@@ -33,7 +33,6 @@ export default function VerifyOtp() {
     try {
       setLoading(true);
 
-      // 🔥 verify OTP
       const res = await api.post("/api/auth/signup/verify-otp", { pendingId, otp });
       const data = res?.data || {};
 
