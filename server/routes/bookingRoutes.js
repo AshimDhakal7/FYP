@@ -1,28 +1,3 @@
-// import express from "express";
-// import { protect } from "../middleware/authMiddleware.js";
-// import {
-//   createBooking,
-//   getMyBookings,
-//   cancelBooking,
-//   getBookedSlots,
-// } from "../controllers/bookingController.js";
-
-// const router = express.Router();
-
-// // POST /api/bookings
-// router.post("/", protect, createBooking);
-
-// // GET /api/bookings/me
-// router.get("/me", protect, getMyBookings);
-
-// // PATCH /api/bookings/:id/cancel
-// router.patch("/:id/cancel", protect, cancelBooking);
-
-// // GET /api/bookings/slots?cricsal=g2&date=2026-02-18  (optional)
-// router.get("/slots", protect, getBookedSlots);
-
-// export default router;
-
 import express from "express";
 import { protect } from "../middleware/authMiddleware.js";
 import {
@@ -30,22 +5,25 @@ import {
   getMyBookings,
   cancelBooking,
   getBookedSlots,
+  getOwnerBookings,
 } from "../controllers/bookingController.js";
 
 const router = express.Router();
 
-// Create booking (protected)
+// Create booking (player)
 router.post("/", protect, createBooking);
 
-// My bookings (protected)
+// My bookings (player)
 router.get("/my", protect, getMyBookings);
-router.get("/me", protect, getMyBookings);   
-router.post("/", protect, createBooking);
+router.get("/me", protect, getMyBookings);
 
-// Cancel booking (protected)
-// router.put("/:id/cancel", protect, cancelBooking);
+// Owner bookings (owner dashboard)
+router.get("/owner", protect, getOwnerBookings);
+
+// Cancel booking (player)
 router.patch("/:id/cancel", protect, cancelBooking);
-// Availability (optional public)
+
+// Availability
 router.get("/booked-slots", getBookedSlots);
 
 export default router;

@@ -1,6 +1,27 @@
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 
+
+export function requireAuth(req, res, next) {
+  try {
+    const header = req.headers.authorization || "";
+    const token = header.startsWith("Bearer ") ? header.slice(7) : null;
+
+    if (!token) return res.status(401).json({ message: "No token provided" });
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = decoded; // should include { id, role, ... }
+    next();
+  } catch (err) {
+    return res.status(401).json({ message: "Invalid/expired token" });
+  }
+}
+
+export function requireOwner(req, res, next) {
+  if (!req.user) return res.status(401).json({ message: "Unauthorized" });
+  if (req.user.role !== "owner") return res.status(403).json({ message: "Owners only" });
+  next();
+}
 // Protect routes (requires JWT)
 export const protect = async (req, res, next) => {
   try {
