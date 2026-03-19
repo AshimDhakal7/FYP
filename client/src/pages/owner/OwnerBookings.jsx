@@ -1,3 +1,4 @@
+
 // import React, { useEffect, useState } from "react";
 
 // const API_BASE = import.meta?.env?.VITE_API_BASE_URL || "http://localhost:5001";
@@ -13,32 +14,71 @@
 //     localStorage.getItem("authToken") ||
 //     "";
 
+//   // ✅ NEW: refresh function
+//   const fetchBookings = async () => {
+//     try {
+//       setLoading(true);
+//       setError("");
+
+//       const res = await fetch(`${API_BASE}/api/bookings/owner`, {
+//         headers: {
+//           "Content-Type": "application/json",
+//           Authorization: `Bearer ${getToken()}`,
+//         },
+//       });
+
+//       const data = await res.json();
+//       if (!res.ok) throw new Error(data?.message || "Failed to load bookings");
+
+//       setBookings(data.bookings || []);
+//     } catch (e) {
+//       setError(e.message || "Load failed");
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
 //   useEffect(() => {
-//     const fetchBookings = async () => {
-//       try {
-//         setLoading(true);
-//         setError("");
-
-//         const res = await fetch(`${API_BASE}/api/bookings/owner`, {
-//           headers: {
-//             "Content-Type": "application/json",
-//             Authorization: `Bearer ${getToken()}`,
-//           },
-//         });
-
-//         const data = await res.json();
-//         if (!res.ok) throw new Error(data?.message || "Failed to load bookings");
-
-//         setBookings(data.bookings || []);
-//       } catch (e) {
-//         setError(e.message || "Load failed");
-//       } finally {
-//         setLoading(false);
-//       }
-//     };
-
 //     fetchBookings();
 //   }, []);
+
+//   // ✅ NEW: approve booking
+//   const handleApprove = async (id) => {
+//     if (!window.confirm("Approve this booking?")) return;
+
+//     try {
+//       await fetch(`${API_BASE}/api/bookings/${id}/approve`, {
+//         method: "PATCH",
+//         headers: {
+//           "Content-Type": "application/json",
+//           Authorization: `Bearer ${getToken()}`,
+//         },
+//       });
+
+//       fetchBookings(); // refresh
+//     } catch (err) {
+//       alert("Failed to approve");
+//     }
+//   };
+
+//   // ✅ NEW: decline booking
+//   const handleDecline = async (id) => {
+//     if (!window.confirm("Decline this booking?")) return;
+
+//     try {
+//       await fetch(`${API_BASE}/api/bookings/${id}/decline`, {
+//         method: "PATCH",
+//         headers: {
+//           "Content-Type": "application/json",
+//           Authorization: `Bearer ${getToken()}`,
+//         },
+//       });
+
+//       fetchBookings(); // refresh
+//     } catch (err) {
+//       alert("Failed to decline");
+//     }
+//   };
 
 //   return (
 //     <div className="bg-white rounded-2xl shadow-sm border p-6">
@@ -89,11 +129,32 @@
 //                   className={`text-xs px-3 py-1 rounded-full border ${
 //                     b.status === "confirmed"
 //                       ? "bg-green-50 border-green-100 text-green-700"
-//                       : "bg-gray-50 border-gray-200 text-gray-700"
+//                       : b.status === "pending"
+//                       ? "bg-yellow-50 border-yellow-100 text-yellow-700"
+//                       : "bg-red-50 border-red-100 text-red-700"
 //                   }`}
 //                 >
-//                   {b.status || "confirmed"}
+//                   {b.status || "pending"}
 //                 </span>
+
+//                 {/* ✅ NEW: buttons */}
+//                 {b.status === "pending" && (
+//                   <>
+//                     <button
+//                       onClick={() => handleApprove(b._id)}
+//                       className="text-xs px-3 py-1 rounded-lg bg-green-600 text-white hover:bg-green-700"
+//                     >
+//                       Approve
+//                     </button>
+
+//                     <button
+//                       onClick={() => handleDecline(b._id)}
+//                       className="text-xs px-3 py-1 rounded-lg bg-red-600 text-white hover:bg-red-700"
+//                     >
+//                       Decline
+//                     </button>
+//                   </>
+//                 )}
 //               </div>
 //             </div>
 //           ))}
@@ -118,10 +179,9 @@ export default function OwnerBookings() {
     localStorage.getItem("authToken") ||
     "";
 
-  // ✅ NEW: refresh function
+  // ✅ Fetch bookings
   const fetchBookings = async () => {
     try {
-      setLoading(true);
       setError("");
 
       const res = await fetch(`${API_BASE}/api/bookings/owner`, {
@@ -142,16 +202,23 @@ export default function OwnerBookings() {
     }
   };
 
+  // ✅ Initial load + auto refresh
   useEffect(() => {
     fetchBookings();
+
+    const interval = setInterval(() => {
+      fetchBookings();
+    }, 5000); // 🔥 auto refresh every 5 sec
+
+    return () => clearInterval(interval);
   }, []);
 
-  // ✅ NEW: approve booking
+  // ✅ Approve booking
   const handleApprove = async (id) => {
     if (!window.confirm("Approve this booking?")) return;
 
     try {
-      await fetch(`${API_BASE}/api/bookings/${id}/approve`, {
+      const res = await fetch(`${API_BASE}/api/bookings/${id}/approve`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -159,18 +226,21 @@ export default function OwnerBookings() {
         },
       });
 
-      fetchBookings(); // refresh
+      if (!res.ok) throw new Error();
+
+      alert("✅ Booking approved successfully"); // ✅ success message
+      fetchBookings();
     } catch (err) {
-      alert("Failed to approve");
+      alert("❌ Failed to approve");
     }
   };
 
-  // ✅ NEW: decline booking
+  // ✅ Decline booking
   const handleDecline = async (id) => {
     if (!window.confirm("Decline this booking?")) return;
 
     try {
-      await fetch(`${API_BASE}/api/bookings/${id}/decline`, {
+      const res = await fetch(`${API_BASE}/api/bookings/${id}/decline`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -178,16 +248,28 @@ export default function OwnerBookings() {
         },
       });
 
-      fetchBookings(); // refresh
+      if (!res.ok) throw new Error();
+
+      alert("❌ Booking declined"); // ✅ success message
+      fetchBookings();
     } catch (err) {
-      alert("Failed to decline");
+      alert("❌ Failed to decline");
     }
+  };
+
+  // ✅ Better status label
+  const getStatusLabel = (status) => {
+    if (status === "pending") return "⏳ Pending";
+    if (status === "confirmed") return "✅ Confirmed";
+    return "❌ Cancelled";
   };
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border p-6">
       <h2 className="text-2xl font-semibold">Bookings</h2>
-      <p className="text-gray-500 mt-1">View and manage bookings made by players.</p>
+      <p className="text-gray-500 mt-1">
+        View and manage bookings made by players.
+      </p>
 
       {loading && <div className="mt-6 text-gray-600">Loading bookings...</div>}
 
@@ -220,8 +302,9 @@ export default function OwnerBookings() {
                 </div>
 
                 <div className="text-sm text-gray-600">
-                  Player: {b.user?.name || "N/A"} ({b.user?.email || "N/A"})
-                </div>
+                Player: {b.user?.name || "N/A"} ({b.user?.email || "N/A"})
+<br />
+Phone: {b.user?.phone || "N/A"}                </div>
               </div>
 
               <div className="flex items-center gap-3">
@@ -238,10 +321,10 @@ export default function OwnerBookings() {
                       : "bg-red-50 border-red-100 text-red-700"
                   }`}
                 >
-                  {b.status || "pending"}
+                  {getStatusLabel(b.status)}
                 </span>
 
-                {/* ✅ NEW: buttons */}
+                {/* Buttons for pending */}
                 {b.status === "pending" && (
                   <>
                     <button

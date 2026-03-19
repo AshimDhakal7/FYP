@@ -327,8 +327,7 @@ export const getOwnerBookings = async (req, res) => {
     const bookings = await Booking.find({ ownerId })
       .sort({ createdAt: -1 })
       .populate("cricsal", "name location pricePerHour")
-      .populate("user", "name email");
-
+      .populate("user", "name email phone");
     return res.json({ bookings });
   } catch (err) {
     console.log("GET OWNER BOOKINGS ERROR:", err);

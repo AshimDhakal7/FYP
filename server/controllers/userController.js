@@ -19,8 +19,7 @@ export const updateMe = async (req, res) => {
     // update fields
     user.name = req.body.name || user.name;
     user.email = req.body.email || user.email;
-    user.contactnumber = req.body.contactnumber || user.contactnumber;
-
+    user.phone = req.body.phone || user.phone;
     // handle uploaded image
     if (req.file) {
       user.profilePicture = `/uploads/${req.file.filename}`;
