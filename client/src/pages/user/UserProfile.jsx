@@ -62,9 +62,41 @@ export default function UserProfile() {
           <aside className="lg:col-span-4">
             <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-black/5">
               <div className="flex items-center gap-4">
-                <div className="grid h-14 w-14 place-items-center rounded-2xl bg-green-100 text-green-800 text-lg font-extrabold ring-1 ring-green-200">
-                  {initials}
-                </div>
+                <div className="h-14 w-14 overflow-hidden rounded-2xl ring-1 ring-green-200">
+
+  {user?.profilePicture ? (
+
+    <img
+      src={`http://localhost:5001${user.profilePicture}`}
+      alt="profile"
+      className="h-full w-full object-cover"
+    />
+
+  ) : (
+
+    <div className="h-14 w-14 overflow-hidden rounded-2xl ring-1 ring-green-200">
+
+    {user?.profilePicture ? (
+  
+      <img
+        src={`http://localhost:5001${user.profilePicture}`}
+        alt="profile"
+        className="h-full w-full object-cover"
+      />
+  
+    ) : (
+  
+      <div className="grid h-full w-full place-items-center bg-green-100 text-green-800 text-lg font-extrabold">
+        {initials}
+      </div>
+  
+    )}
+  
+  </div>
+
+  )}
+
+</div>
                 <div className="min-w-0">
                   <p className="truncate text-lg font-extrabold text-gray-900">
                     {safeUser.name}

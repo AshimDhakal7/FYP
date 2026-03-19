@@ -39,6 +39,7 @@
 import express from "express";
 import { protect } from "../middleware/authMiddleware.js";
 import { updateMe } from "../controllers/userController.js";
+import upload from "../middleware/uploadMiddleware.js";
 
 import {
   sendSignupOtp,
@@ -52,17 +53,10 @@ import {
 
 const router = express.Router();
 
-/* =====================================================
-   USER PROFILE
-===================================================== */
+
+
 router.put("/me", protect, updateMe);
 
-
-/* =====================================================
-   SIGNUP (OTP FLOW ONLY)  ⭐ IMPORTANT
-   STEP 1 -> send otp
-   STEP 2 -> verify otp -> create account
-===================================================== */
 
 // send OTP to email
 router.post("/signup/send-otp", sendSignupOtp);
@@ -70,10 +64,6 @@ router.post("/signup/send-otp", sendSignupOtp);
 // verify OTP & actually create the user
 router.post("/signup/verify-otp", verifyOtpAndCreateAccount);
 
-
-/* =====================================================
-   LOGIN
-===================================================== */
 router.post("/login", loginUser);
 
 
@@ -86,6 +76,9 @@ router.post("/forgot-password", forgotPassword);
 
 // reset using token
 router.post("/reset-password/:token", resetPassword);
+
+//UPLOAD PROFILE PICS 
+router.put("/me", protect, upload.single("profilePicture"), updateMe);
 
 
 /* =====================================================

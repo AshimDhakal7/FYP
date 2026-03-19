@@ -17,9 +17,7 @@ const hashOtp = (otp) =>
 const normalizeEmail = (email) =>
   String(email || "").trim().toLowerCase();
 
-/* =========================
-   SIGNUP STEP 1: SEND OTP
-========================= */
+// Sending OTP 
 export const sendSignupOtp = async (req, res) => {
   try {
     let { name, email, password, role } = req.body;
@@ -166,9 +164,7 @@ export const sendSignupOtp = async (req, res) => {
   }
 };
 
-/* =========================
-   SIGNUP STEP 2: VERIFY OTP
-========================= */
+//Verify OTP
 export const verifyOtpAndCreateAccount = async (req, res) => {
   try {
     const { pendingId, otp } = req.body;
@@ -223,10 +219,7 @@ export const verifyOtpAndCreateAccount = async (req, res) => {
   }
 };
 
-
-/* =========================
-   LOGIN
-========================= */
+//Login
 export const loginUser = async (req, res) => {
   try {
     let { email, password } = req.body;
@@ -263,10 +256,7 @@ export const loginUser = async (req, res) => {
   }
 };
 
-
-/* =========================
-   PASSWORD RESET
-========================= */
+//Reset Password
 export const forgotPassword = async (req, res) => {
   try {
     const email = normalizeEmail(req.body.email);
@@ -311,11 +301,10 @@ export const resetPassword = async (req, res) => {
     return res.status(500).json({ message: "Reset failed" });
   }
 };
-/* =========================
-   PASSWORD RESET (OTP) - SEND OTP
-   POST /api/auth/password/send-otp
-   body: { email }
-========================= */
+   //PASSWORD RESET (OTP) - SEND OTP
+   //POST /api/auth/password/send-otp
+   //body: { email }
+
 export const sendPasswordResetOtp = async (req, res) => {
   try {
     const email = normalizeEmail(req.body.email);
@@ -326,12 +315,12 @@ export const sendPasswordResetOtp = async (req, res) => {
 
     const user = await User.findOne({ email });
 
-    // ✅ Don't reveal if email exists
+    //  Don't reveal if email exists
     if (!user) {
       return res.json({ message: "If email exists, OTP has been sent." });
     }
 
-    // ⏱ 60 seconds cooldown
+    // 60 seconds to cooldown
     if (
       user.passwordResetOtpLastSentAt &&
       Date.now() - new Date(user.passwordResetOtpLastSentAt).getTime() < 60000
@@ -348,7 +337,7 @@ export const sendPasswordResetOtp = async (req, res) => {
     user.passwordResetOtpLastSentAt = new Date();
     await user.save();
 
-    // ✅ Send OTP email (same style as signup)
+    //Send OTP email
     await sendEmail({
       to: user.email,
       subject: "CricBook Password Reset OTP",

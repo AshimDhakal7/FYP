@@ -261,8 +261,7 @@ export default function Bookings() {
                     ? "border-red-200 bg-red-50 text-red-700"
                     : "border-yellow-200 bg-yellow-50 text-yellow-700";
 
-                const canCancel = status === "confirmed";
-
+                    const canCancel = status === "pending" || status === "confirmed";
                 return (
                   <div
                     key={b._id}

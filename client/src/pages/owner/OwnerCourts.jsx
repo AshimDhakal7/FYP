@@ -1,3 +1,4 @@
+
 // import React, { useEffect, useMemo, useRef, useState } from "react";
 // import { useLocation } from "react-router-dom";
 
@@ -82,9 +83,8 @@
 //         },
 //         body: JSON.stringify({
 //           name: name.trim(),
-//           area: city.trim(),
-//           pricePerHour: Number(price),
-//           features: [], // later you can add UI for this
+//           location: city.trim(),          // ✅ FIX: city/area -> location
+//           pricePerHour: Number(price),    // ✅ OK
 //         }),
 //       });
 
@@ -94,7 +94,6 @@
 //         return;
 //       }
 
-//       // add instantly to UI
 //       setCourts((prev) => [data, ...prev]);
 
 //       setName("");
@@ -156,7 +155,6 @@
 //         </div>
 //       )}
 
-//       {/* Add court form */}
 //       <form
 //         ref={formRef}
 //         onSubmit={addCourt}
@@ -210,7 +208,6 @@
 //         </button>
 //       </form>
 
-//       {/* Court list */}
 //       <div className="mt-6">
 //         <div className="flex items-center justify-between">
 //           <div className="text-sm font-semibold text-gray-900">Your Courts</div>
@@ -237,16 +234,26 @@
 //                 <div className="flex items-start justify-between gap-3">
 //                   <div>
 //                     <div className="text-base font-semibold text-gray-900">{c.name}</div>
-//                     <div className="mt-1 text-sm text-gray-600">{c.area}</div>
+//                     <div className="mt-1 text-sm text-gray-600">
+//                       {c.location || "—"} {/* ✅ FIX: show location */}
+//                     </div>
 //                   </div>
 
-//                   <button
-//                     type="button"
-//                     onClick={() => removeCourt(c._id)}
-//                     className="rounded-xl border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-900 hover:bg-gray-50 transition"
-//                   >
-//                     Remove
-//                   </button>
+//                   <div className="flex gap-2">
+//   <button
+//     onClick={() => handleEdit(court)}
+//     className="px-3 py-1 text-sm rounded-lg border border-blue-300 text-blue-700 hover:bg-blue-50"
+//   >
+//     Edit
+//   </button>
+
+//   <button
+//     onClick={() => handleRemove(court._id)}
+//     className="px-3 py-1 text-sm rounded-lg border border-red-300 text-red-700 hover:bg-red-50"
+//   >
+//     Remove
+//   </button>
+// </div>
 //                 </div>
 
 //                 <div className="mt-4 flex items-center justify-between">
@@ -254,7 +261,7 @@
 //                     Rs {c.pricePerHour}/hr
 //                   </div>
 //                   <div className="text-xs text-gray-500">
-//                     {new Date(c.createdAt).toLocaleDateString()}
+//                     {c.createdAt ? new Date(c.createdAt).toLocaleDateString() : ""}
 //                   </div>
 //                 </div>
 //               </div>
@@ -290,6 +297,9 @@ export default function OwnerCourts() {
   const [name, setName] = useState("");
   const [city, setCity] = useState("");
   const [price, setPrice] = useState("");
+
+  // ✅ added for edit feature (minimal)
+  const [editingId, setEditingId] = useState(null);
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -340,6 +350,34 @@ export default function OwnerCourts() {
     }
   }, [location.state]);
 
+  // ✅ edit handler (fills form, same inputs)
+  const handleEdit = (court) => {
+    setErr("");
+    setEditingId(court._id);
+    setName(court.name || "");
+    setCity(court.location || "");
+    setPrice(
+      court.pricePerHour !== undefined && court.pricePerHour !== null
+        ? String(court.pricePerHour)
+        : ""
+    );
+
+    setTimeout(() => {
+      formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      nameRef.current?.focus();
+    }, 80);
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setName("");
+    setCity("");
+    setPrice("");
+    setErr("");
+    setTimeout(() => nameRef.current?.focus(), 50);
+  };
+
+  // ✅ SAME function name (addCourt) but supports edit using PUT when editingId exists
   const addCourt = async (e) => {
     e.preventDefault();
     setErr("");
@@ -351,16 +389,23 @@ export default function OwnerCourts() {
 
     setSaving(true);
     try {
-      const res = await fetch(`${API_BASE}/api/grounds`, {
-        method: "POST",
+      const isEditing = Boolean(editingId);
+      const url = isEditing
+        ? `${API_BASE}/api/grounds/${editingId}`
+        : `${API_BASE}/api/grounds`;
+
+      const method = isEditing ? "PUT" : "POST";
+
+      const res = await fetch(url, {
+        method,
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           name: name.trim(),
-          location: city.trim(),          // ✅ FIX: city/area -> location
-          pricePerHour: Number(price),    // ✅ OK
+          location: city.trim(), // keep your existing field usage
+          pricePerHour: Number(price),
         }),
       });
 
@@ -370,11 +415,20 @@ export default function OwnerCourts() {
         return;
       }
 
-      setCourts((prev) => [data, ...prev]);
+      // keep same “update UI immediately” behavior
+      if (isEditing) {
+        setCourts((prev) =>
+          prev.map((c) => (c._id === editingId ? data : c))
+        );
+      } else {
+        setCourts((prev) => [data, ...prev]);
+      }
 
+      // reset form
       setName("");
       setCity("");
       setPrice("");
+      setEditingId(null);
       nameRef.current?.focus();
     } catch (e2) {
       setErr("Server error saving court");
@@ -398,6 +452,9 @@ export default function OwnerCourts() {
       }
 
       setCourts((prev) => prev.filter((c) => c._id !== id));
+
+      // if you delete the one you're editing, reset form
+      if (editingId === id) cancelEdit();
     } catch {
       setErr("Server error removing court");
     }
@@ -475,13 +532,25 @@ export default function OwnerCourts() {
           </div>
         </div>
 
-        <button
-          type="submit"
-          disabled={saving}
-          className="mt-4 rounded-xl bg-green-700 px-5 py-2.5 text-sm font-semibold text-white hover:bg-green-800 transition disabled:opacity-60"
-        >
-          {saving ? "Saving..." : "Save Court"}
-        </button>
+        <div className="mt-4 flex flex-wrap items-center gap-2">
+          <button
+            type="submit"
+            disabled={saving}
+            className="rounded-xl bg-green-700 px-5 py-2.5 text-sm font-semibold text-white hover:bg-green-800 transition disabled:opacity-60"
+          >
+            {saving ? "Saving..." : editingId ? "Update Court" : "Save Court"}
+          </button>
+
+          {editingId && (
+            <button
+              type="button"
+              onClick={cancelEdit}
+              className="rounded-xl border border-gray-200 bg-white px-5 py-2.5 text-sm font-semibold text-gray-900 hover:bg-gray-50"
+            >
+              Cancel Edit
+            </button>
+          )}
+        </div>
       </form>
 
       <div className="mt-6">
@@ -498,7 +567,9 @@ export default function OwnerCourts() {
           </div>
         ) : courts.length === 0 ? (
           <div className="mt-3 rounded-xl border border-dashed border-gray-200 p-6 text-sm text-gray-600">
-            No courts added yet. Click <span className="font-semibold">+ Add Court</span> to create your first listing.
+            No courts added yet. Click{" "}
+            <span className="font-semibold">+ Add Court</span> to create your
+            first listing.
           </div>
         ) : (
           <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
@@ -509,19 +580,31 @@ export default function OwnerCourts() {
               >
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <div className="text-base font-semibold text-gray-900">{c.name}</div>
+                    <div className="text-base font-semibold text-gray-900">
+                      {c.name}
+                    </div>
                     <div className="mt-1 text-sm text-gray-600">
-                      {c.location || "—"} {/* ✅ FIX: show location */}
+                      {c.location || "—"}
                     </div>
                   </div>
 
-                  <button
-                    type="button"
-                    onClick={() => removeCourt(c._id)}
-                    className="rounded-xl border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-900 hover:bg-gray-50 transition"
-                  >
-                    Remove
-                  </button>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handleEdit(c)}
+                      className="px-3 py-1 text-sm rounded-lg border border-blue-300 text-blue-700 hover:bg-blue-50"
+                    >
+                      Edit
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => removeCourt(c._id)}
+                      className="px-3 py-1 text-sm rounded-lg border border-red-300 text-red-700 hover:bg-red-50"
+                    >
+                      Remove
+                    </button>
+                  </div>
                 </div>
 
                 <div className="mt-4 flex items-center justify-between">

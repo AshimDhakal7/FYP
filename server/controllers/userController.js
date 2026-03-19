@@ -2,19 +2,38 @@ import User from "../models/User.js";
 
 export const updateMe = async (req, res) => {
   try {
-    const { name, email } = req.body;
 
-    const user = await User.findById(req.user._id);
-    if (!user) return res.status(404).json({ message: "User not found" });
+    // get logged in user id from middleware
+    const userId = req.user?.id || req.user?._id;
 
-    if (name) user.name = name;
-    if (email) user.email = email;
+    if (!userId) {
+      return res.status(401).json({ message: "Unauthorized user" });
+    }
 
-    await user.save();
+    const user = await User.findById(userId);
 
-    const updated = await User.findById(req.user._id).select("-password");
-    return res.json(updated);
-  } catch (e) {
-    return res.status(500).json({ message: "Server error" });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // update fields
+    user.name = req.body.name || user.name;
+    user.email = req.body.email || user.email;
+    user.contactnumber = req.body.contactnumber || user.contactnumber;
+
+    // handle uploaded image
+    if (req.file) {
+      user.profilePicture = `/uploads/${req.file.filename}`;
+    }
+
+    const updatedUser = await user.save();
+
+    res.json(updatedUser);
+
+  } catch (error) {
+    console.error("Profile update error:", error);
+    res.status(500).json({
+      message: "Server error while updating profile"
+    });
   }
 };

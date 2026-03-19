@@ -237,6 +237,8 @@ import OwnerDashboard from "./pages/owner/OwnerDashboard";
 import OwnerCourts from "./pages/owner/OwnerCourts";
 import OwnerBookings from "./pages/owner/OwnerBookings";
 import OwnerSettings from "./pages/owner/OwnerSettings";
+import GroundDetails from "./pages/user/GroundDetails";
+
 
 import "./App.css";
 
@@ -255,6 +257,7 @@ export default function App() {
           <Route path="/verify-otp" element={<VerifyOtp />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password/:token" element={<ResetPassword />} />
+          <Route path="/ground/:id" element={<GroundDetails />} />
 
           {/* Protected */}
           <Route

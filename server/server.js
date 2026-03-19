@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import connectDB from "./config/dbconfig.js";
+import path from "path";
 
 import authRoutes from "./routes/authRoutes.js";
 import bookingRoutes from "./routes/bookingRoutes.js";
@@ -14,6 +15,7 @@ dotenv.config();
 await connectDB();
 
 const app = express();
+app.use("/uploads", express.static("uploads"));
 
 // ---- Middleware ----
 app.use(
