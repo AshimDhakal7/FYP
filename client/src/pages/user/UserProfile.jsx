@@ -73,9 +73,11 @@ export default function UserProfile() {
 
                   {safeUser.profilePicture ? (
                     <img
-                      src={`http://localhost:5001${safeUser.profilePicture}`}
-                      alt="profile"
-                      className="h-full w-full object-cover"
+                    src={
+                      safeUser.profilePicture?.startsWith("http")
+                        ? safeUser.profilePicture
+                        : `http://localhost:5001${safeUser.profilePicture}`
+                    }
                     />
                   ) : (
                     initials

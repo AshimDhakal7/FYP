@@ -5,11 +5,35 @@ const storage = multer.diskStorage({
   destination(req, file, cb) {
     cb(null, "uploads/");
   },
+
   filename(req, file, cb) {
-    cb(null, `profile-${Date.now()}${path.extname(file.originalname)}`);
+   
+    const cleanName = path
+      .basename(file.originalname)
+      .replace(/^._/, "");
+
+    const ext = path.extname(cleanName).toLowerCase();
+
+    cb(null, `profile-${Date.now()}${ext}`);
   },
 });
 
-const upload = multer({ storage });
+// filter only images
+const fileFilter = (req, file, cb) => {
+  if (file.originalname.startsWith("._")) {
+    return cb(null, false); 
+  }
+
+  if (!file.mimetype.startsWith("image/")) {
+    return cb(new Error("Only image files allowed"), false);
+  }
+
+  cb(null, true);
+};
+
+const upload = multer({
+  storage,
+  fileFilter,
+});
 
 export default upload;

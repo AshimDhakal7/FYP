@@ -19,15 +19,22 @@ export const updateMe = async (req, res) => {
     // update fields
     user.name = req.body.name || user.name;
     user.email = req.body.email || user.email;
-    user.phone = req.body.phone || user.phone;
-    // handle uploaded image
+    user.phone = req.body.phone || req.body.contactnumber || user.phone;  
+      // handle uploaded image
     if (req.file) {
       user.profilePicture = `/uploads/${req.file.filename}`;
     }
 
     const updatedUser = await user.save();
 
-    res.json(updatedUser);
+    res.json({
+      _id: updatedUser._id,
+      name: updatedUser.name,
+      email: updatedUser.email,
+      phone: updatedUser.phone,
+      role: updatedUser.role,
+      profilePicture: updatedUser.profilePicture,
+    });
 
   } catch (error) {
     console.error("Profile update error:", error);

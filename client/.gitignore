@@ -23,7 +23,8 @@ dist-ssr
 *.sln
 *.sw?
 
-
+._*
+.DS_Store
 node_modules/
 .env
 *.log
