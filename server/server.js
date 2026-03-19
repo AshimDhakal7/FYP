@@ -9,6 +9,8 @@ import bookingRoutes from "./routes/bookingRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import groundRoutes from "./routes/groundRoutes.js";
 
+import dashboardRoutes from "./routes/dashboardRoutes.js";
+
 dotenv.config();
 
 // Connect DB (your dbconfig.js should handle mongoose.connect)
@@ -34,7 +36,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/bookings", bookingRoutes);
 app.use("/api/grounds", groundRoutes);
-
+app.use("/api/dashboard", dashboardRoutes);
 // ---- Start server ----
 const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => console.log(`🚀 Server running: http://localhost:${PORT}`));
