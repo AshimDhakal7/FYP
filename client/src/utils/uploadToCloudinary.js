@@ -250,26 +250,68 @@
 //   );
 // }
 
-import axios from "axios";
+// import axios from "axios";
 
-const CLOUD_NAME = "dpbkdq0to";
-const UPLOAD_PRESET = "cricbook_upload";
+// const CLOUD_NAME = "dpbkdq0to";
+// const UPLOAD_PRESET = "cricbook_upload";
 
-export const uploadToCloudinary = async (files) => {
-  const urls = [];
+// export const uploadToCloudinary = async (files) => {
+//   const urls = [];
 
-  for (let i = 0; i < files.length; i++) {
-    const formData = new FormData();
-    formData.append("file", files[i]);
-    formData.append("upload_preset", UPLOAD_PRESET);
+//   for (let i = 0; i < files.length; i++) {
+//     const formData = new FormData();
+//     formData.append("file", files[i]);
+//     formData.append("upload_preset", UPLOAD_PRESET);
 
-    const res = await axios.post(
-      `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
-      formData
+//     const res = await axios.post(
+//       `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
+//       formData
+//     );
+
+//     urls.push(res.data.secure_url);
+//   }
+
+//   return urls;
+// };
+console.log("ENV TEST:", import.meta.env);
+
+export async function uploadToCloudinary(files) {
+  const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+  const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
+
+  if (!cloudName || !uploadPreset) {
+    throw new Error(
+      "Cloudinary environment variables are missing. Check VITE_CLOUDINARY_CLOUD_NAME and VITE_CLOUDINARY_UPLOAD_PRESET."
     );
-
-    urls.push(res.data.secure_url);
   }
 
-  return urls;
-};
+  const uploadedUrls = [];
+
+  for (const file of files) {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", uploadPreset);
+
+    const res = await fetch(
+      `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
+      {
+        method: "POST",
+        body: formData,
+      }
+    );
+
+    const data = await res.json().catch(() => null);
+
+    if (!res.ok) {
+      throw new Error(data?.error?.message || "Failed to upload image");
+    }
+
+    if (!data?.secure_url) {
+      throw new Error("Cloudinary did not return image URL");
+    }
+
+    uploadedUrls.push(data.secure_url);
+  }
+
+  return uploadedUrls;
+}
