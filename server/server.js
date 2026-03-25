@@ -58,6 +58,8 @@ import groundRoutes from "./routes/groundRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
 import dashboardRoutes from "./routes/dashboardRoutes.js";
 
+import reportRoutes from "./routes/reportRoutes.js";
+
 // 🔥 Load env FIRST
 dotenv.config();
 
@@ -76,23 +78,26 @@ app.use(
 
 app.use(express.json());
 
-// ---- Static ----
+//  Static 
 app.use("/uploads", express.static("uploads"));
 
-// ---- Health ----
+//  Health 
 app.get("/", (req, res) => {
   res.send("✅ CricBook API is running");
 });
 
-// ---- Routes ----
+//  Routes 
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/bookings", bookingRoutes);
 app.use("/api/grounds", groundRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 
-// ✅ PAYMENT ROUTE (IMPORTANT)
+// PAYMENT ROUTE 
 app.use("/api/payment", paymentRoutes);
+
+//Download report|owner
+app.use("/api/reports", reportRoutes);
 
 // ---- Start ----
 const PORT = process.env.PORT || 5001;
