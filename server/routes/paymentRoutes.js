@@ -38,13 +38,29 @@
 
 // export default router;
 
+// import express from "express";
+// import { initiateKhaltiPayment } from "../controllers/khaltiController.js";
+// import { protect } from "../middleware/authMiddleware.js";
+
+// const router = express.Router();
+
+// // ✅ SINGLE CLEAN ROUTE
+// router.post("/khalti/initiate", protect, initiateKhaltiPayment);
+
+// export default router;
+
+
+
 import express from "express";
-import { initiateKhaltiPayment } from "../controllers/khaltiController.js";
+import {
+  initiateKhaltiPayment,
+  verifyKhaltiPayment,
+} from "../controllers/khaltiController.js";
 import { protect } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-// ✅ SINGLE CLEAN ROUTE
 router.post("/khalti/initiate", protect, initiateKhaltiPayment);
+router.post("/khalti/verify", protect, verifyKhaltiPayment);
 
 export default router;

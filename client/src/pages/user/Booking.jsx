@@ -618,34 +618,23 @@ export default function Bookings() {
     verifyPayment(pidx, bookingId);
   }, [location.search]);
 
-  const verifyPayment = async (pidx, bookingIdFromCallback = null) => {
+  const verifyPayment = async (pidx, bookingId = null) => {
     try {
       const res = await fetch(`${API_BASE}/api/payment/khalti/verify`, {
         method: "POST",
         headers: authHeaders(),
-        body: JSON.stringify({ pidx }),
+        body: JSON.stringify({ pidx, bookingId }),
       });
-
+  
+      const data = await res.json();
+      console.log("VERIFY RESPONSE:", data);
+  
       if (!res.ok) {
-        console.error("Verification failed");
-        setPaymentMessage("Payment verification failed.");
+        setPaymentMessage(data?.message || "Payment verification failed.");
         navigate("/bookings", { replace: true });
         return;
       }
-
-      const data = await res.json();
-
-      const verifiedBookingId =
-        data?.booking?._id ||
-        data?._id ||
-        data?.bookingId ||
-        bookingIdFromCallback ||
-        null;
-
-      if (verifiedBookingId) {
-        clearStoredPaymentPreference(verifiedBookingId);
-      }
-
+  
       setPaymentMessage("Payment completed successfully.");
       await loadBookings();
       navigate("/bookings", { replace: true });
@@ -655,7 +644,6 @@ export default function Bookings() {
       navigate("/bookings", { replace: true });
     }
   };
-
   const handlePay = async (booking) => {
     try {
       const paymentPreference = getPaymentPreference(booking);
