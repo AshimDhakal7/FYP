@@ -86,6 +86,9 @@ const userSchema = new mongoose.Schema(
     passwordResetOtpHash: { type: String },
     passwordResetOtpExpires: { type: Date },
     passwordResetOtpLastSentAt: { type: Date },
+
+    // ✅ Admin block/unblock
+    isBlocked: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

@@ -23,6 +23,25 @@ export async function apiGet(path) {
   return data;
 }
 
+export async function apiPatch(path, body = {}) {
+  const res = await fetch(`${API_BASE}${path}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${getToken()}`,
+    },
+    body: JSON.stringify(body),
+  });
+
+  const data = await res.json().catch(() => ({}));
+
+  if (!res.ok) {
+    throw new Error(data?.message || "Request failed");
+  }
+
+  return data;
+}
+
 export async function safeApiGet(path, fallback = {}) {
   try {
     return await apiGet(path);

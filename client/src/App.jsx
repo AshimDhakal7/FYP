@@ -275,7 +275,7 @@ function AppRoutes() {
           <Route
             path="/admin"
             element={
-              <RequireAuth>
+              <RequireAuth role="admin">
                 <AdminLayout />
               </RequireAuth>
             }

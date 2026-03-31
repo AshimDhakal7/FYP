@@ -85,6 +85,18 @@ export default function AdminDashboard() {
     [overview.monthlyData]
   );
 
+  const chartTopGrounds = useMemo(
+    () =>
+      overview.topGrounds.length
+        ? overview.topGrounds
+        : [
+            { name: "Ground 1", revenue: 0 },
+            { name: "Ground 2", revenue: 0 },
+            { name: "Ground 3", revenue: 0 },
+          ],
+    [overview.topGrounds]
+  );
+
   return (
     <div className="space-y-6">
       <section className="rounded-[32px] border border-white/10 bg-gradient-to-br from-slate-900 via-slate-900 to-emerald-950/50 p-6 shadow-2xl shadow-black/20">
@@ -167,8 +179,8 @@ export default function AdminDashboard() {
             </p>
           </div>
 
-          <div className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
+          <div className="w-full h-[320px] min-h-[320px]">
+            <ResponsiveContainer width="100%" height={320}>
               <AreaChart data={chartRevenue}>
                 <defs>
                   <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
@@ -207,9 +219,9 @@ export default function AdminDashboard() {
             </p>
           </div>
 
-          <div className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={overview.topGrounds}>
+          <div className="w-full h-[320px] min-h-[320px]">
+            <ResponsiveContainer width="100%" height={320}>
+              <BarChart data={chartTopGrounds}>
                 <CartesianGrid stroke="rgba(255,255,255,0.08)" vertical={false} />
                 <XAxis dataKey="name" stroke="#94a3b8" hide />
                 <YAxis stroke="#94a3b8" />

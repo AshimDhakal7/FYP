@@ -59,6 +59,7 @@ import paymentRoutes from "./routes/paymentRoutes.js";
 import dashboardRoutes from "./routes/dashboardRoutes.js";
 
 import reportRoutes from "./routes/reportRoutes.js";
+import adminRoutes from "./routes/adminRoutes.js";
 
 // 🔥 Load env FIRST
 dotenv.config();
@@ -98,6 +99,9 @@ app.use("/api/payment", paymentRoutes);
 
 //Download report|owner
 app.use("/api/reports", reportRoutes);
+
+// Admin routes
+app.use("/api/admin", adminRoutes);
 
 // ---- Start ----
 const PORT = process.env.PORT || 5001;

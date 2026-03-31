@@ -16,13 +16,34 @@ function getPageTitle(pathname) {
   if (pathname.includes("/grounds")) return "Grounds Management";
   if (pathname.includes("/bookings")) return "Bookings Management";
   if (pathname.includes("/payments")) return "Payments Management";
-  return "Admin Panel";
+  return "Superadmin Panel";
 }
 
 export default function AdminLayout() {
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  const adminInfo = useMemo(() => {
+    try {
+      const raw =
+        localStorage.getItem("user") ||
+        localStorage.getItem("authUser") ||
+        localStorage.getItem("userData");
+
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        return {
+          name: parsed?.name || "Superadmin",
+          email: parsed?.email || "",
+        };
+      }
+    } catch {
+      // ignore
+    }
+
+    return { name: "Superadmin", email: "" };
+  }, []);
 
   const links = useMemo(
     () => [
@@ -40,6 +61,9 @@ export default function AdminLayout() {
     localStorage.removeItem("token");
     localStorage.removeItem("accessToken");
     localStorage.removeItem("authToken");
+    localStorage.removeItem("user");
+    localStorage.removeItem("authUser");
+    localStorage.removeItem("userData");
     navigate("/login");
   };
 
@@ -68,7 +92,7 @@ export default function AdminLayout() {
                 </div>
                 <div>
                   <h1 className="text-xl font-semibold tracking-tight">
-                    CricBook Admin
+                    CricBook Superadmin
                   </h1>
                   <p className="text-sm text-slate-400">
                     Premium control panel
@@ -95,7 +119,9 @@ export default function AdminLayout() {
                   <SidebarIcon>{link.icon}</SidebarIcon>
                   <div>
                     <p className="font-medium">{link.name}</p>
-                    <p className="text-xs opacity-70">Manage {link.name.toLowerCase()}</p>
+                    <p className="text-xs opacity-70">
+                      Manage {link.name.toLowerCase()}
+                    </p>
                   </div>
                 </NavLink>
               ))}
@@ -104,8 +130,10 @@ export default function AdminLayout() {
             <div className="border-t border-white/10 p-4">
               <div className="mb-4 rounded-3xl border border-white/10 bg-white/5 p-4">
                 <p className="text-sm text-slate-400">Signed in as</p>
-                <p className="mt-1 font-medium text-white">Platform Admin</p>
-                <p className="text-xs text-slate-500">System access enabled</p>
+                <p className="mt-1 font-medium text-white">{adminInfo.name}</p>
+                <p className="text-xs text-slate-500">
+                  {adminInfo.email || "System access enabled"}
+                </p>
               </div>
 
               <button
@@ -131,7 +159,7 @@ export default function AdminLayout() {
 
                 <div>
                   <p className="text-sm uppercase tracking-[0.22em] text-emerald-300/80">
-                    Premium Admin
+                    Premium Superadmin
                   </p>
                   <h2 className="text-xl font-semibold text-white sm:text-2xl">
                     {pageTitle}
@@ -144,7 +172,7 @@ export default function AdminLayout() {
                   Live platform monitoring
                 </div>
                 <div className="grid h-11 w-11 place-items-center rounded-2xl bg-gradient-to-br from-emerald-400 to-cyan-400 font-semibold text-slate-950">
-                  A
+                  S
                 </div>
               </div>
             </div>

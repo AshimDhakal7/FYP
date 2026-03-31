@@ -1,23 +1,23 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { safeApiGet, formatMoney, statusTone } from "./adminApi";
+import { apiGet, formatMoney, statusTone } from "./adminApi";
 
 export default function AdminGrounds() {
   const [search, setSearch] = useState("");
   const [grounds, setGrounds] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const load = async () => {
-      const data = await safeApiGet("/api/admin/grounds", {
-        grounds: [
-          { _id: "1", name: "CricBook Arena", location: "Kathmandu", ownerName: "Himal Sports Group", pricePerHour: 2500, status: "active" },
-          { _id: "2", name: "Metro Turf", location: "Lalitpur", ownerName: "Metro Turf Pvt Ltd", pricePerHour: 3200, status: "active" },
-          { _id: "3", name: "Valley Indoor Box", location: "Bhaktapur", ownerName: "Valley Arena", pricePerHour: 1800, status: "pending" },
-        ],
-      });
-
-      setGrounds(data?.grounds || []);
+      try {
+        setLoading(true);
+        const data = await apiGet("/api/admin/grounds");
+        setGrounds(data?.grounds || []);
+      } catch {
+        setGrounds([]);
+      } finally {
+        setLoading(false);
+      }
     };
-
     load();
   }, []);
 
@@ -28,6 +28,11 @@ export default function AdminGrounds() {
         .includes(search.toLowerCase())
     );
   }, [grounds, search]);
+
+  const avgPrice =
+    grounds.length
+      ? grounds.reduce((sum, x) => sum + Number(x.pricePerHour || 0), 0) / grounds.length
+      : 0;
 
   return (
     <div className="space-y-6">
@@ -51,65 +56,84 @@ export default function AdminGrounds() {
           <h2 className="mt-2 text-3xl font-semibold text-white">{grounds.length}</h2>
         </div>
         <div className="rounded-[28px] border border-white/10 bg-slate-900/60 p-5">
-          <p className="text-sm text-slate-400">Active Grounds</p>
+          <p className="text-sm text-slate-400">Listed Today</p>
           <h2 className="mt-2 text-3xl font-semibold text-white">
-            {grounds.filter((x) => x.status === "active").length}
+            {
+              grounds.filter((g) => {
+                const d = new Date(g.createdAt);
+                const now = new Date();
+                return (
+                  d.getDate() === now.getDate() &&
+                  d.getMonth() === now.getMonth() &&
+                  d.getFullYear() === now.getFullYear()
+                );
+              }).length
+            }
           </h2>
         </div>
         <div className="rounded-[28px] border border-white/10 bg-slate-900/60 p-5">
-          <p className="text-sm text-slate-400">Average Price</p>
-          <h2 className="mt-2 text-3xl font-semibold text-white">
-            {formatMoney(
-              grounds.length
-                ? grounds.reduce((sum, x) => sum + Number(x.pricePerHour || 0), 0) /
-                    grounds.length
-                : 0
-            )}
-          </h2>
+          <p className="text-sm text-slate-400">Average Price / Hr</p>
+          <h2 className="mt-2 text-3xl font-semibold text-white">{formatMoney(avgPrice)}</h2>
         </div>
       </section>
 
-      <section className="grid grid-cols-1 gap-4 xl:grid-cols-3">
-        {filtered.map((ground) => (
-          <div
-            key={ground._id}
-            className="rounded-[28px] border border-white/10 bg-slate-900/60 p-5"
-          >
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <h3 className="text-lg font-semibold text-white">{ground.name}</h3>
-                <p className="mt-1 text-sm text-slate-400">{ground.location}</p>
-              </div>
-              <span
-                className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${statusTone(
-                  ground.status
-                )}`}
-              >
-                {ground.status}
-              </span>
-            </div>
-
-            <div className="mt-5 space-y-3 text-sm text-slate-300">
-              <div className="flex items-center justify-between rounded-2xl bg-white/5 px-4 py-3">
-                <span>Owner</span>
-                <span className="font-medium text-white">{ground.ownerName}</span>
-              </div>
-              <div className="flex items-center justify-between rounded-2xl bg-white/5 px-4 py-3">
-                <span>Price / Hour</span>
-                <span className="font-medium text-emerald-300">
-                  {formatMoney(ground.pricePerHour)}
+      {loading ? (
+        <div className="rounded-[30px] border border-white/10 bg-slate-900/60 px-5 py-12 text-center text-slate-400">
+          Loading grounds…
+        </div>
+      ) : (
+        <section className="grid grid-cols-1 gap-4 xl:grid-cols-3">
+          {filtered.map((ground) => (
+            <div
+              key={ground._id}
+              className="rounded-[28px] border border-white/10 bg-slate-900/60 p-5"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <h3 className="text-lg font-semibold text-white">{ground.name}</h3>
+                  <p className="mt-1 text-sm text-slate-400">{ground.location}</p>
+                </div>
+                <span
+                  className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${statusTone(
+                    ground.status || "active"
+                  )}`}
+                >
+                  {ground.status || "Active"}
                 </span>
               </div>
-            </div>
-          </div>
-        ))}
 
-        {!filtered.length && (
-          <div className="rounded-[28px] border border-dashed border-white/10 bg-slate-900/60 p-10 text-center text-slate-400 xl:col-span-3">
-            No grounds found.
-          </div>
-        )}
-      </section>
+              <div className="mt-5 space-y-3 text-sm text-slate-300">
+                <div className="flex items-center justify-between rounded-2xl bg-white/5 px-4 py-3">
+                  <span>Owner</span>
+                  <span className="font-medium text-white">{ground.ownerName || "Unknown"}</span>
+                </div>
+                <div className="flex items-center justify-between rounded-2xl bg-white/5 px-4 py-3">
+                  <span>Owner Email</span>
+                  <span className="font-medium text-slate-300">{ground.ownerEmail || "—"}</span>
+                </div>
+                <div className="flex items-center justify-between rounded-2xl bg-white/5 px-4 py-3">
+                  <span>Price / Hour</span>
+                  <span className="font-medium text-emerald-300">
+                    {formatMoney(ground.pricePerHour)}
+                  </span>
+                </div>
+                {ground.phone && (
+                  <div className="flex items-center justify-between rounded-2xl bg-white/5 px-4 py-3">
+                    <span>Phone</span>
+                    <span className="font-medium text-white">{ground.phone}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+
+          {!filtered.length && (
+            <div className="rounded-[28px] border border-dashed border-white/10 bg-slate-900/60 p-10 text-center text-slate-400 xl:col-span-3">
+              No grounds found.
+            </div>
+          )}
+        </section>
+      )}
     </div>
   );
 }

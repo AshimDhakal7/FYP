@@ -1,15 +1,16 @@
-
-  /* RESET */
+/* /* RESET */
 html,
 body {
   margin: 0;
   padding: 0;
   height: 100%;
+  background-color: #020617; /* 🔥 ADD THIS */
 }
 
 /* Root */
 #root {
   min-height: 100%;
+  background-color: #020617; /* 🔥 ADD THIS */
 }
 
 /* Layout wrapper */
