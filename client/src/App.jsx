@@ -183,6 +183,8 @@ import AdminOwners from "./pages/admin/AdminOwners";
 import AdminGrounds from "./pages/admin/AdminGrounds";
 import AdminPayments from "./pages/admin/AdminPayments";
 
+import InvoiceVerification from "./pages/InvoiceVerification";
+
 import "./App.css";
 
 function AppRoutes() {
@@ -203,7 +205,7 @@ function AppRoutes() {
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password/:token" element={<ResetPassword />} />
           <Route path="/ground/:id" element={<GroundDetails />} />
-
+          <Route path="/invoice/:bookingId" element={<InvoiceVerification />} />
           <Route
             path="/home"
             element={
