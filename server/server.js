@@ -61,6 +61,7 @@ import dashboardRoutes from "./routes/dashboardRoutes.js";
 import reportRoutes from "./routes/reportRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 
+import notificationRoutes from "./routes/notificationRoutes.js";
 // 🔥 Load env FIRST
 dotenv.config();
 
@@ -102,6 +103,9 @@ app.use("/api/reports", reportRoutes);
 
 // Admin routes
 app.use("/api/admin", adminRoutes);
+
+//Notification
+app.use("/api/notifications", notificationRoutes);
 
 // ---- Start ----
 const PORT = process.env.PORT || 5001;

@@ -106,7 +106,7 @@ export default function AdminDashboard() {
               Overview
             </p>
             <h1 className="mt-2 text-3xl font-semibold text-white sm:text-4xl">
-              Clean, professional and premium admin dashboard
+              Professional admin dashboard
             </h1>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300">
               Monitor bookings, revenue, owners, users, and operational flow from

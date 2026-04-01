@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
+import NotificationBell from "../../components/NotificationBell";
 
 function SidebarIcon({ children }) {
   return (
@@ -95,7 +96,7 @@ export default function AdminLayout() {
                     CricBook Superadmin
                   </h1>
                   <p className="text-sm text-slate-400">
-                    Premium control panel
+                    CONTROL PANNEL
                   </p>
                 </div>
               </div>
@@ -159,7 +160,7 @@ export default function AdminLayout() {
 
                 <div>
                   <p className="text-sm uppercase tracking-[0.22em] text-emerald-300/80">
-                    Premium Superadmin
+                    Admin Dashboard
                   </p>
                   <h2 className="text-xl font-semibold text-white sm:text-2xl">
                     {pageTitle}
@@ -168,13 +169,14 @@ export default function AdminLayout() {
               </div>
 
               <div className="flex items-center gap-3">
-                <div className="hidden rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-slate-300 sm:block">
-                  Live platform monitoring
-                </div>
-                <div className="grid h-11 w-11 place-items-center rounded-2xl bg-gradient-to-br from-emerald-400 to-cyan-400 font-semibold text-slate-950">
-                  S
-                </div>
-              </div>
+  <div className="hidden rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-slate-300 sm:block">
+    Live platform monitoring
+  </div>
+  <NotificationBell />
+  <div className="grid h-11 w-11 place-items-center rounded-2xl bg-gradient-to-br from-emerald-400 to-cyan-400 font-semibold text-slate-950">
+    S
+  </div>
+</div>
             </div>
           </header>
 
