@@ -176,8 +176,7 @@
 //     </div>
 //   );
 // }
-
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 const API_BASE = import.meta?.env?.VITE_API_BASE_URL || "http://localhost:5001";
@@ -197,7 +196,6 @@ export default function EditProfile() {
   const [err, setErr] = useState("");
   const [msg, setMsg] = useState("");
 
-  // Load user
   useEffect(() => {
     try {
       const u = JSON.parse(localStorage.getItem("user")) || {};
@@ -231,6 +229,7 @@ export default function EditProfile() {
   };
 
   const handleImage = (file) => {
+    if (!file) return;
     setProfilePicture(file);
     setPreview(URL.createObjectURL(file));
   };
@@ -259,7 +258,7 @@ export default function EditProfile() {
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data?.message);
+      if (!res.ok) throw new Error(data?.message || "Update failed");
 
       const updatedUser = {
         ...JSON.parse(localStorage.getItem("user") || "{}"),
@@ -268,9 +267,10 @@ export default function EditProfile() {
 
       localStorage.setItem("user", JSON.stringify(updatedUser));
       window.dispatchEvent(new Event("userUpdated"));
+      window.dispatchEvent(new Event("user-profile-updated"));
 
       setMsg("Profile updated successfully!");
-      setTimeout(() => navigate("/profile"), 800);
+      setTimeout(() => navigate("/profile"), 900);
     } catch (e2) {
       setErr(e2.message || "Update failed");
     } finally {
@@ -279,121 +279,202 @@ export default function EditProfile() {
   };
 
   const initials = useMemo(() => {
-    const raw = String(form.name || form.email || "User");
-    const parts = raw.split(" ");
-    return (
-      (parts[0]?.[0] || "U") + (parts[1]?.[0] || "")
-    ).toUpperCase();
+    const raw = String(form.name || form.email || "User").trim();
+    const parts = raw.split(" ").filter(Boolean);
+    return ((parts[0]?.[0] || "U") + (parts[1]?.[0] || "")).toUpperCase();
   }, [form]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white px-4 py-8">
-      <div className="mx-auto max-w-5xl">
-
-        {/* Header */}
-        <div className="flex justify-between items-center mb-6">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-gray-100 px-4 py-8">
+      <div className="mx-auto max-w-6xl">
+        <div className="mb-8 flex flex-wrap items-start justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-extrabold">Edit Profile</h1>
-            <p className="text-sm text-gray-600">Update your account info</p>
+            <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-green-700">
+              My Account
+            </p>
+            <h1 className="mt-1 text-3xl font-black tracking-tight text-gray-900">
+              Edit Profile
+            </h1>
+            <p className="mt-2 max-w-2xl text-sm text-gray-600">
+              Update your personal details and profile picture to keep your CricBook account professional and up to date.
+            </p>
           </div>
 
           <Link
             to="/profile"
-            className="border px-4 py-2 rounded-xl hover:bg-gray-50"
+            className="rounded-2xl border border-gray-200 bg-white px-5 py-3 text-sm font-semibold text-gray-700 shadow-sm transition hover:border-green-200 hover:bg-green-50 hover:text-green-700"
           >
-            ← Back
+            ← Back to Profile
           </Link>
         </div>
 
-        {/* Card */}
         <form
           onSubmit={onSubmit}
-          className="bg-white rounded-3xl shadow-sm p-6 grid md:grid-cols-3 gap-6"
+          className="grid gap-6 xl:grid-cols-12"
         >
-
-          {/* Avatar Section */}
-          <div className="flex flex-col items-center gap-3">
-
-            <div className="relative group">
-              <div className="h-24 w-24 rounded-2xl overflow-hidden bg-green-100 flex items-center justify-center text-green-800 font-bold text-xl">
-                {preview ? (
-                  <img
-                    src={preview}
-                    className="h-full w-full object-cover"
-                    alt="preview"
-                  />
-                ) : (
-                  initials
-                )}
+          <aside className="xl:col-span-4">
+            <div className="overflow-hidden rounded-[28px] border border-white/70 bg-white shadow-[0_20px_60px_rgba(16,24,40,0.08)]">
+              <div className="bg-gradient-to-r from-green-700 to-green-600 px-6 py-7 text-white">
+                <p className="text-sm font-semibold text-green-50">
+                  Profile Preview
+                </p>
+                <h2 className="mt-1 text-2xl font-black">Your Identity Card</h2>
               </div>
 
-              <label className="absolute inset-0 bg-black/40 rounded-2xl flex items-center justify-center opacity-0 group-hover:opacity-100 cursor-pointer transition">
-                <span className="text-white text-sm">Change</span>
-                <input
-                  type="file"
-                  className="hidden"
-                  onChange={(e) => handleImage(e.target.files[0])}
+              <div className="p-6">
+                <div className="flex flex-col items-center">
+                  <div className="group relative">
+                    <div className="flex h-32 w-32 items-center justify-center overflow-hidden rounded-[28px] border-4 border-green-100 bg-green-100 text-3xl font-black text-green-800 shadow-sm">
+                      {preview ? (
+                        <img
+                          src={preview}
+                          className="h-full w-full object-cover"
+                          alt="Profile preview"
+                        />
+                      ) : (
+                        initials
+                      )}
+                    </div>
+
+                    <label className="absolute inset-0 flex cursor-pointer items-center justify-center rounded-[28px] bg-black/45 opacity-0 transition group-hover:opacity-100">
+                      <span className="rounded-full bg-white px-4 py-2 text-sm font-bold text-gray-900">
+                        Change Photo
+                      </span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => handleImage(e.target.files?.[0])}
+                      />
+                    </label>
+                  </div>
+
+                  <p className="mt-4 text-xl font-black text-gray-900">
+                    {form.name || "Your Name"}
+                  </p>
+                  <p className="mt-1 text-sm text-gray-500">
+                    {form.email || "your@email.com"}
+                  </p>
+
+                  <div className="mt-6 w-full rounded-2xl border border-green-100 bg-green-50 p-4">
+                    <p className="text-xs font-bold uppercase tracking-wider text-green-700">
+                      Upload Tip
+                    </p>
+                    <p className="mt-2 text-sm leading-6 text-green-800">
+                      Use a clear profile picture for a more trusted and polished account appearance.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </aside>
+
+          <section className="xl:col-span-8">
+            <div className="rounded-[28px] border border-white/70 bg-white p-6 shadow-[0_20px_60px_rgba(16,24,40,0.08)] sm:p-8">
+              <div className="flex flex-wrap items-start justify-between gap-4">
+                <div>
+                  <h2 className="text-2xl font-black tracking-tight text-gray-900">
+                    Personal Information
+                  </h2>
+                  <p className="mt-1 text-sm text-gray-600">
+                    Edit your account details below and save changes when ready.
+                  </p>
+                </div>
+
+                <div className="rounded-2xl border border-gray-100 bg-gray-50 px-4 py-3 text-sm text-gray-600">
+                  Secure profile update
+                </div>
+              </div>
+
+              <div className="mt-8 grid gap-5 md:grid-cols-2">
+                <Field
+                  label="Full Name"
+                  name="name"
+                  value={form.name}
+                  onChange={onChange}
+                  placeholder="Enter your full name"
                 />
-              </label>
+
+                <Field
+                  label="Email Address"
+                  name="email"
+                  type="email"
+                  value={form.email}
+                  onChange={onChange}
+                  placeholder="Enter your email"
+                />
+
+                <div className="md:col-span-2">
+                  <Field
+                    label="Phone Number"
+                    name="contactnumber"
+                    value={form.contactnumber}
+                    onChange={onChange}
+                    placeholder="Enter phone number"
+                  />
+                </div>
+              </div>
+
+              {(err || msg) && (
+                <div className="mt-6 space-y-3">
+                  {err && (
+                    <div className="rounded-2xl border border-red-100 bg-red-50 px-4 py-3 text-sm font-medium text-red-600">
+                      {err}
+                    </div>
+                  )}
+                  {msg && (
+                    <div className="rounded-2xl border border-green-100 bg-green-50 px-4 py-3 text-sm font-medium text-green-700">
+                      {msg}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <div className="mt-8 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+                <Link
+                  to="/profile"
+                  className="rounded-2xl border border-gray-200 bg-white px-5 py-3 text-center text-sm font-semibold text-gray-700 transition hover:bg-gray-50"
+                >
+                  Cancel
+                </Link>
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="rounded-2xl bg-green-600 px-6 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-70"
+                >
+                  {loading ? "Saving Changes..." : "Save Changes"}
+                </button>
+              </div>
             </div>
-
-            <p className="text-xs text-gray-500 text-center">
-              Click image to upload
-            </p>
-          </div>
-
-          {/* Form Fields */}
-          <div className="md:col-span-2 grid gap-4">
-
-            <div>
-              <label className="text-sm text-gray-500">Name</label>
-              <input
-                name="name"
-                value={form.name}
-                onChange={onChange}
-                className="w-full mt-1 px-3 py-2 border rounded-xl focus:ring-2 focus:ring-green-500 outline-none"
-              />
-            </div>
-
-            <div>
-              <label className="text-sm text-gray-500">Email</label>
-              <input
-                name="email"
-                value={form.email}
-                onChange={onChange}
-                className="w-full mt-1 px-3 py-2 border rounded-xl focus:ring-2 focus:ring-green-500 outline-none"
-              />
-            </div>
-
-            <div>
-              <label className="text-sm text-gray-500">Phone</label>
-              <input
-                name="contactnumber"
-                value={form.contactnumber}
-                onChange={onChange}
-                placeholder="Enter phone number"
-                className="w-full mt-1 px-3 py-2 border rounded-xl focus:ring-2 focus:ring-green-500 outline-none"
-              />
-            </div>
-
-            {/* Messages */}
-            {err && <p className="text-red-500 text-sm">{err}</p>}
-            {msg && <p className="text-green-600 text-sm">{msg}</p>}
-
-            {/* Button */}
-            <div className="flex justify-end">
-              <button
-                type="submit"
-                disabled={loading}
-                className="bg-green-600 text-white px-6 py-2 rounded-xl font-semibold hover:bg-green-700"
-              >
-                {loading ? "Saving..." : "Save Changes"}
-              </button>
-            </div>
-
-          </div>
+          </section>
         </form>
       </div>
+    </div>
+  );
+}
+
+function Field({
+  label,
+  name,
+  value,
+  onChange,
+  placeholder,
+  type = "text",
+}) {
+  return (
+    <div>
+      <label className="mb-2 block text-sm font-semibold text-gray-700">
+        {label}
+      </label>
+      <input
+        type={type}
+        name={name}
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3.5 text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-green-400 focus:bg-white focus:ring-4 focus:ring-green-100"
+      />
     </div>
   );
 }

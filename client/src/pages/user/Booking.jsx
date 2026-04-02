@@ -1,7 +1,7 @@
 
-
 // import React, { useEffect, useState } from "react";
 // import { Link, useLocation, useNavigate } from "react-router-dom";
+// import { DocumentArrowDownIcon } from "@heroicons/react/24/outline";
 
 // const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5001";
 
@@ -68,12 +68,21 @@
 //       : totalPrice;
 //   };
 
+//   const getPaidLabel = (booking) => {
+//     if (booking?.paymentStatusLabel) return booking.paymentStatusLabel;
+//     return getPaymentPreference(booking) === "advance_30"
+//       ? "30% paid"
+//       : "Full amount paid";
+//   };
+
+//   const getPaidAmount = (booking) => {
+//     if (Number(booking?.amountPaid) > 0) return Number(booking.amountPaid);
+//     return getPayableAmount(booking);
+//   };
+
 //   const loadBookings = async (showLoader = true) => {
 //     try {
-//       if (showLoader) {
-//         setLoading(true);
-//       }
-
+//       if (showLoader) setLoading(true);
 //       setError("");
 
 //       const token = getToken();
@@ -106,9 +115,7 @@
 //       console.error("LOAD ERROR:", err);
 //       setError("Failed to load bookings");
 //     } finally {
-//       if (showLoader) {
-//         setLoading(false);
-//       }
+//       if (showLoader) setLoading(false);
 //     }
 //   };
 
@@ -121,6 +128,40 @@
 
 //     return () => clearInterval(interval);
 //   }, []);
+
+//   const downloadInvoicePdf = async (bookingId) => {
+//     try {
+//       const token = getToken();
+
+//       const res = await fetch(`${API_BASE}/api/payment/invoice/${bookingId}`, {
+//         method: "GET",
+//         headers: {
+//           Authorization: `Bearer ${token}`,
+//         },
+//       });
+
+//       if (!res.ok) {
+//         const data = await res.json().catch(() => null);
+//         alert(data?.message || "Failed to download invoice");
+//         return;
+//       }
+
+//       const blob = await res.blob();
+//       const url = window.URL.createObjectURL(blob);
+
+//       const a = document.createElement("a");
+//       a.href = url;
+//       a.download = `invoice-${bookingId}.pdf`;
+//       document.body.appendChild(a);
+//       a.click();
+//       a.remove();
+
+//       window.URL.revokeObjectURL(url);
+//     } catch (err) {
+//       console.error("INVOICE DOWNLOAD ERROR:", err);
+//       alert("Failed to download invoice");
+//     }
+//   };
 
 //   useEffect(() => {
 //     const params = new URLSearchParams(location.search);
@@ -152,7 +193,6 @@
 //       });
 
 //       const data = await res.json();
-//       console.log("VERIFY RESPONSE:", data);
 
 //       if (!res.ok) {
 //         setPaymentMessage(data?.message || "Payment verification failed.");
@@ -160,7 +200,15 @@
 //         return;
 //       }
 
-//       setPaymentMessage("Payment completed successfully.");
+//       setPaymentMessage(
+//         "Payment completed successfully. Professional invoice downloaded."
+//       );
+
+//       const resolvedBookingId = data?.booking?._id || bookingId;
+//       if (resolvedBookingId) {
+//         await downloadInvoicePdf(resolvedBookingId);
+//       }
+
 //       await loadBookings(false);
 //       navigate("/bookings", { replace: true });
 //     } catch (err) {
@@ -343,13 +391,19 @@
 //                         </span>
 //                       </p>
 
-//                       {paymentPreference === "advance_30" && (
+//                       {b.isPaid && (
+//                         <p className="text-sm text-green-700 mt-2 font-medium">
+//                           {getPaidLabel(b)} • Paid Rs. {getPaidAmount(b)}
+//                         </p>
+//                       )}
+
+//                       {paymentPreference === "advance_30" && !b.isPaid && (
 //                         <p className="text-xs text-amber-700 mt-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 inline-block">
 //                           30% advance selected for this booking.
 //                         </p>
 //                       )}
 
-//                       {paymentPreference === "full" && (
+//                       {paymentPreference === "full" && !b.isPaid && (
 //                         <p className="text-xs text-blue-700 mt-2 bg-blue-50 border border-blue-200 rounded-lg px-3 py-2 inline-block">
 //                           Full payment selected for this booking.
 //                         </p>
@@ -366,9 +420,19 @@
 //                       </span>
 
 //                       {b.isPaid && (
-//                         <span className="text-xs bg-green-100 text-green-700 px-3 py-1 rounded-full font-medium">
-//                           Paid
-//                         </span>
+//                         <>
+//                           <span className="text-xs bg-green-100 text-green-700 px-3 py-1 rounded-full font-medium">
+//                             Paid
+//                           </span>
+//                           <button
+//                             onClick={() => downloadInvoicePdf(b._id)}
+//                             title="Download Invoice"
+//                             aria-label="Download Invoice"
+//                             className="inline-flex items-center justify-center rounded-xl bg-emerald-600 p-2.5 text-white shadow-sm transition hover:bg-emerald-700"
+//                           >
+//                             <DocumentArrowDownIcon className="h-5 w-5" />
+//                           </button>
+//                         </>
 //                       )}
 
 //                       {status === "pending" && (
@@ -418,7 +482,8 @@
 
 //             {getPaymentPreference(selectedBooking) === "advance_30" && (
 //               <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-//                 If cancelled within 2 hours before game time, the 30% advance is non-refundable.
+//                 If cancelled within 2 hours before game time, the 30% advance is
+//                 non-refundable.
 //               </div>
 //             )}
 
@@ -452,6 +517,7 @@
 
 import React, { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { DocumentArrowDownIcon } from "@heroicons/react/24/outline";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5001";
 
@@ -528,6 +594,28 @@ export default function Bookings() {
   const getPaidAmount = (booking) => {
     if (Number(booking?.amountPaid) > 0) return Number(booking.amountPaid);
     return getPayableAmount(booking);
+  };
+
+  const updateStoredUserLoyaltyPoints = (pointsEarned = 0) => {
+    try {
+      const rawUser = localStorage.getItem("user");
+      if (!rawUser) return;
+  
+      const parsedUser = JSON.parse(rawUser);
+  
+      parsedUser.loyaltyPoints =
+        Number(parsedUser?.loyaltyPoints || 0) + Number(pointsEarned || 0);
+  
+      localStorage.setItem("user", JSON.stringify(parsedUser));
+  
+      window.dispatchEvent(
+        new CustomEvent("user-profile-updated", {
+          detail: { loyaltyPoints: parsedUser.loyaltyPoints },
+        })
+      );
+    } catch (err) {
+      console.error("Failed to update local user loyalty points:", err);
+    }
   };
 
   const loadBookings = async (showLoader = true) => {
@@ -650,7 +738,15 @@ export default function Bookings() {
         return;
       }
 
-      setPaymentMessage("Payment completed successfully. Professional invoice downloaded.");
+      const earnedPoints = Number(data?.loyalty?.pointsEarned || 0);
+
+      updateStoredUserLoyaltyPoints(earnedPoints);
+
+      setPaymentMessage(
+        earnedPoints > 0
+          ? `Payment completed successfully. You earned ${earnedPoints} loyalty points. Professional invoice downloaded.`
+          : "Payment completed successfully. Professional invoice downloaded."
+      );
 
       const resolvedBookingId = data?.booking?._id || bookingId;
       if (resolvedBookingId) {
@@ -845,6 +941,12 @@ export default function Bookings() {
                         </p>
                       )}
 
+                      {b.isPaid && (
+                        <p className="text-sm text-amber-700 mt-1 font-medium">
+                          Loyalty Points Earned: {Number(b.pointsEarned || 0)}
+                        </p>
+                      )}
+
                       {paymentPreference === "advance_30" && !b.isPaid && (
                         <p className="text-xs text-amber-700 mt-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 inline-block">
                           30% advance selected for this booking.
@@ -874,9 +976,11 @@ export default function Bookings() {
                           </span>
                           <button
                             onClick={() => downloadInvoicePdf(b._id)}
-                            className="px-4 py-2 text-sm text-white bg-emerald-600 rounded-xl hover:bg-emerald-700 transition font-medium"
+                            title="Download Invoice"
+                            aria-label="Download Invoice"
+                            className="inline-flex items-center justify-center rounded-xl bg-emerald-600 p-2.5 text-white shadow-sm transition hover:bg-emerald-700"
                           >
-                            Download Invoice
+                            <DocumentArrowDownIcon className="h-5 w-5" />
                           </button>
                         </>
                       )}
@@ -928,7 +1032,8 @@ export default function Bookings() {
 
             {getPaymentPreference(selectedBooking) === "advance_30" && (
               <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-                If cancelled within 2 hours before game time, the 30% advance is non-refundable.
+                If cancelled within 2 hours before game time, the 30% advance is
+                non-refundable.
               </div>
             )}
 
@@ -958,4 +1063,3 @@ export default function Bookings() {
     </div>
   );
 }
-

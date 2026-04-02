@@ -1,30 +1,25 @@
 
-
 // import mongoose from "mongoose";
 
 // const bookingSchema = new mongoose.Schema(
 //   {
-//     // which ground was booked
 //     cricsal: {
 //       type: mongoose.Schema.Types.ObjectId,
 //       ref: "Ground",
 //       required: true,
 //     },
 
-//     // (optional alias — safe to keep)
 //     ground: {
 //       type: mongoose.Schema.Types.ObjectId,
 //       ref: "Ground",
 //     },
 
-//     // player who booked
 //     user: {
 //       type: mongoose.Schema.Types.ObjectId,
 //       ref: "User",
 //       required: true,
 //     },
 
-//     // ⭐⭐⭐ MOST IMPORTANT FIELD (OWNER DASHBOARD USES THIS)
 //     ownerId: {
 //       type: mongoose.Schema.Types.ObjectId,
 //       ref: "User",
@@ -62,15 +57,70 @@
 //       default: false,
 //     },
 
+//     paymentPreference: {
+//       type: String,
+//       enum: ["advance_30", "full"],
+//       default: "advance_30",
+//     },
+
+//     advancePercent: {
+//       type: Number,
+//       default: 30,
+//     },
+
+//     amountPaid: {
+//       type: Number,
+//       default: 0,
+//     },
+
+//     paymentStatusLabel: {
+//       type: String,
+//       default: "",
+//     },
+
+//     paymentMethod: {
+//       type: String,
+//       default: "",
+//     },
+
+//     khaltiPidx: {
+//       type: String,
+//       default: "",
+//     },
+
+//     paidAt: {
+//       type: Date,
+//       default: null,
+//     },
+
 //     status: {
 //       type: String,
 //       enum: ["pending", "confirmed", "cancelled"],
 //       default: "pending",
-//     }, // ✅ FIXED (comma added)
+//     },
 
 //     cancelledAt: {
 //       type: Date,
 //     },
+
+//     pointsEarned: {
+//       type: Number,
+//       default: 0,
+//     },
+//     pointsRedeemed: {
+//       type: Number,
+//       default: 0,
+//     },
+//     discountApplied: {
+//       type: Number,
+//       default: 0,
+//     },
+//     rewardStatus: {
+//       type: String,
+//       enum: ["none", "earned", "reversed"],
+//       default: "none",
+//     },
+
 //   },
 //   { timestamps: true }
 // );
@@ -180,6 +230,30 @@ const bookingSchema = new mongoose.Schema(
 
     cancelledAt: {
       type: Date,
+    },
+
+    pointsEarned: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+
+    pointsRedeemed: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+
+    discountApplied: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+
+    rewardStatus: {
+      type: String,
+      enum: ["none", "earned", "reversed"],
+      default: "none",
     },
   },
   { timestamps: true }
