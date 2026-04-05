@@ -1,339 +1,5 @@
 
 // import React, { useEffect, useMemo, useRef, useState } from "react";
-// import { useLocation } from "react-router-dom";
-// import { uploadToCloudinary } from "../../utils/uploadToCloudinary";
-
-// const API_BASE = import.meta?.env?.VITE_API_BASE_URL || "http://localhost:5001";
-
-// export default function OwnerCourts() {
-//   const location = useLocation();
-//   const formRef = useRef(null);
-//   const nameRef = useRef(null);
-
-//   const [courts, setCourts] = useState([]);
-//   const [name, setName] = useState("");
-//   const [city, setCity] = useState("");
-//   const [price, setPrice] = useState("");
-
-//   const [images, setImages] = useState([]);
-//   const [preview, setPreview] = useState([]);
-//   const [existingImages, setExistingImages] = useState([]);
-
-//   const [editingId, setEditingId] = useState(null);
-
-//   const [loading, setLoading] = useState(true);
-//   const [saving, setSaving] = useState(false);
-//   const [err, setErr] = useState("");
-
-//   const token = useMemo(() => {
-//     return (
-//       localStorage.getItem("token") ||
-//       localStorage.getItem("accessToken") ||
-//       localStorage.getItem("authToken") ||
-//       ""
-//     );
-//   }, []);
-//   const [phone, setPhone] = useState("");
-//   const loadMyCourts = async () => {
-//     setLoading(true);
-//     try {
-//       const res = await fetch(`${API_BASE}/api/grounds/mine`, {
-//         headers: { Authorization: `Bearer ${token}` },
-//       });
-//       const data = await res.json();
-//       setCourts(Array.isArray(data) ? data : []);
-//     } catch {
-//       setErr("Failed to load courts");
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
-
-//   useEffect(() => {
-//     loadMyCourts();
-//   }, []);
-
-//   const handleImageChange = (e) => {
-//     const files = Array.from(e.target.files);
-//     setImages(files);
-//     setPreview(files.map((f) => URL.createObjectURL(f)));
-//   };
-
-//   const handleEdit = (court) => {
-//     setEditingId(court._id);
-//     setName(court.name || "");
-//     setCity(court.location || "");
-//     setPrice(String(court.pricePerHour || ""));
-//     setExistingImages(court.images || []);
-//     setImages([]);
-//     setPreview([]);
-
-//     formRef.current?.scrollIntoView({ behavior: "smooth" });
-//     setTimeout(() => nameRef.current?.focus(), 100);
-//   };
-
-//   const removeExistingImage = (img) => {
-//     setExistingImages((prev) => prev.filter((i) => i !== img));
-//   };
-
-//   const cancelEdit = () => {
-//     setEditingId(null);
-//     setName("");
-//     setCity("");
-//     setPrice("");
-//     setImages([]);
-//     setPreview([]);
-//     setExistingImages([]);
-//   };
-
-//   const addCourt = async (e) => {
-//     e.preventDefault();
-//     setErr("");
-
-//     if (!name.trim() || !city.trim() || !price) {
-//       setErr("Please fill all fields");
-//       return;
-//     }
-
-//     setSaving(true);
-//     try {
-//       let uploadedUrls = [];
-
-//       if (images.length > 0) {
-//         uploadedUrls = await uploadToCloudinary(images);
-//       }
-
-//       const finalImages = [...existingImages, ...uploadedUrls];
-
-//       const isEditing = Boolean(editingId);
-//       const url = isEditing
-//         ? `${API_BASE}/api/grounds/${editingId}`
-//         : `${API_BASE}/api/grounds`;
-
-//       const method = isEditing ? "PUT" : "POST";
-
-//       const res = await fetch(url, {
-//         method,
-//         headers: {
-//           "Content-Type": "application/json",
-//           Authorization: `Bearer ${token}`,
-//         },
-//         body: JSON.stringify({
-//           name: name.trim(),
-//           location: city.trim(),
-//           pricePerHour: Number(price),
-//           images: finalImages,
-//         }),
-//       });
-
-//       const data = await res.json();
-
-//       if (!res.ok) {
-//         setErr(data?.message || "Failed to save");
-//         return;
-//       }
-
-//       if (isEditing) {
-//         setCourts((prev) =>
-//           prev.map((c) => (c._id === editingId ? data : c))
-//         );
-//       } else {
-//         setCourts((prev) => [data, ...prev]);
-//       }
-
-//       cancelEdit();
-//     } catch {
-//       setErr("Server error");
-//     } finally {
-//       setSaving(false);
-//     }
-//   };
-
-//   const removeCourt = async (id) => {
-//     try {
-//       await fetch(`${API_BASE}/api/grounds/${id}`, {
-//         method: "DELETE",
-//         headers: { Authorization: `Bearer ${token}` },
-//       });
-
-//       setCourts((prev) => prev.filter((c) => c._id !== id));
-//     } catch {
-//       setErr("Failed to delete");
-//     }
-//   };
-
-//   return (
-//     <div>
-//       <div className="flex justify-between items-end">
-//         <div>
-//           <h1 className="text-2xl font-bold text-gray-900">Manage Courts</h1>
-//           <p className="text-sm text-gray-600">
-//             Add and manage your indoor cricket courts.
-//           </p>
-//         </div>
-
-//         <button
-//           onClick={() => formRef.current?.scrollIntoView({ behavior: "smooth" })}
-//           className="bg-green-700 text-white px-4 py-2 rounded-xl"
-//         >
-//           + Add Court
-//         </button>
-//       </div>
-
-//       {err && <div className="text-red-500 mt-3">{err}</div>}
-
-//       {/* FORM */}
-//       <form ref={formRef} onSubmit={addCourt} className="mt-5 space-y-3">
-//         <input
-//           ref={nameRef}
-//           value={name}
-//           onChange={(e) => setName(e.target.value)}
-//           placeholder="Court Name"
-//           className="w-full border rounded p-2"
-//         />
-
-//         <input
-//           value={city}
-//           onChange={(e) => setCity(e.target.value)}
-//           placeholder="City"
-//           className="w-full border rounded p-2"
-//         />
-
-// <input
-//   type="text"
-//   placeholder="Phone Number"
-//   value={phone}
-//   onChange={(e) => setPhone(e.target.value)}
-//   className="w-full rounded-lg border px-3 py-2"
-// />
-
-//         <input
-//           value={price}
-//           onChange={(e) => setPrice(e.target.value)}
-//           placeholder="Price"
-//           className="w-full border rounded p-2"
-//         />
-
-//         {/* Upload */}
-//         <input type="file" multiple onChange={handleImageChange} />
-
-//         {/* Preview */}
-//         <div className="flex gap-2 flex-wrap">
-//           {preview.map((img, i) => (
-//             <img key={i} src={img} className="w-20 h-20 rounded object-cover" />
-//           ))}
-//         </div>
-
-//         {/* Existing Images */}
-//         <div className="flex gap-2 flex-wrap">
-//           {existingImages.map((img, i) => (
-//             <div key={i} className="relative">
-//               <img src={img} className="w-20 h-20 rounded object-cover" />
-//               <button
-//                 type="button"
-//                 onClick={() => removeExistingImage(img)}
-//                 className="absolute top-0 right-0 bg-red-500 text-white text-xs px-1 rounded"
-//               >
-//                 ×
-//               </button>
-//             </div>
-//           ))}
-//         </div>
-
-//         <div className="flex gap-2">
-//           <button className="bg-green-700 text-white px-4 py-2 rounded">
-//             {saving ? "Saving..." : editingId ? "Update Court" : "Save Court"}
-//           </button>
-
-//           {editingId && (
-//             <button
-//               type="button"
-//               onClick={cancelEdit}
-//               className="border px-4 py-2 rounded"
-//             >
-//               Cancel
-//             </button>
-//           )}
-//         </div>
-//       </form>
-
-//       {/* COURTS */}
-//       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 mt-6">
-//         {courts.map((c) => (
-//           <CourtCard
-//             key={c._id}
-//             court={c}
-//             onEdit={handleEdit}
-//             onDelete={removeCourt}
-//           />
-//         ))}
-//       </div>
-//     </div>
-//   );
-// }
-
-// //  Carousel Card
-// function CourtCard({ court, onEdit, onDelete }) {
-//   const [index, setIndex] = useState(0);
-//   const images = court.images || [];
-
-//   const next = () => setIndex((i) => (i + 1) % images.length);
-//   const prev = () => setIndex((i) => (i - 1 + images.length) % images.length);
-
-//   return (
-//     <div className="bg-white p-4 rounded-xl shadow">
-//       {images.length > 0 && (
-//         <div className="relative">
-//           <img
-//             src={images[index]}
-//             className="w-full h-40 object-cover rounded"
-//           />
-
-//           {images.length > 1 && (
-//             <>
-//               <button
-//                 onClick={prev}
-//                 className="absolute left-0 top-1/2 bg-white px-2"
-//               >
-//                 ◀
-//               </button>
-//               <button
-//                 onClick={next}
-//                 className="absolute right-0 top-1/2 bg-white px-2"
-//               >
-//                 ▶
-//               </button>
-//             </>
-//           )}
-//         </div>
-//       )}
-
-//       <div className="mt-2 font-semibold">{court.name}</div>
-//       <div className="text-sm text-gray-500">{court.location}</div>
-//       <div className="text-green-700 font-semibold">
-//         Rs {court.pricePerHour}/hr
-//       </div>
-
-//       <div className="flex gap-2 mt-2">
-//         <button
-//           onClick={() => onEdit(court)}
-//           className="text-blue-600 text-sm"
-//         >
-//           Edit
-//         </button>
-//         <button
-//           onClick={() => onDelete(court._id)}
-//           className="text-red-600 text-sm"
-//         >
-//           Delete
-//         </button>
-//       </div>
-//     </div>
-//   );
-// }
-
-
-// import React, { useEffect, useMemo, useRef, useState } from "react";
 // import { uploadToCloudinary } from "../../utils/uploadToCloudinary";
 
 // const API_BASE = import.meta?.env?.VITE_API_BASE_URL || "http://localhost:5001";
@@ -368,6 +34,14 @@
 //     );
 //   }, []);
 
+//   const parseJsonSafe = async (res) => {
+//     try {
+//       return await res.json();
+//     } catch {
+//       return null;
+//     }
+//   };
+
 //   const loadMyCourts = async () => {
 //     setLoading(true);
 //     setErr("");
@@ -379,7 +53,7 @@
 //         },
 //       });
 
-//       const data = await res.json();
+//       const data = await parseJsonSafe(res);
 
 //       if (!res.ok) {
 //         setErr(data?.message || "Failed to load courts");
@@ -388,8 +62,8 @@
 //       }
 
 //       setCourts(Array.isArray(data) ? data : []);
-//     } catch {
-//       setErr("Failed to load courts");
+//     } catch (error) {
+//       setErr(error?.message || "Failed to load courts");
 //       setCourts([]);
 //     } finally {
 //       setLoading(false);
@@ -418,11 +92,14 @@
 //     }
 //   };
 
+//   const clearPreviewUrls = () => {
+//     preview.forEach((url) => URL.revokeObjectURL(url));
+//   };
+
 //   const handleImageChange = (e) => {
 //     const files = Array.from(e.target.files || []);
 
-//     preview.forEach((url) => URL.revokeObjectURL(url));
-
+//     clearPreviewUrls();
 //     setImages(files);
 //     setPreview(files.map((file) => URL.createObjectURL(file)));
 //   };
@@ -440,7 +117,7 @@
 //     );
 //     setExistingImages(Array.isArray(court.images) ? court.images : []);
 
-//     preview.forEach((url) => URL.revokeObjectURL(url));
+//     clearPreviewUrls();
 //     setImages([]);
 //     setPreview([]);
 //     resetFileInput();
@@ -454,7 +131,7 @@
 //   };
 
 //   const cancelEdit = () => {
-//     preview.forEach((url) => URL.revokeObjectURL(url));
+//     clearPreviewUrls();
 
 //     setEditingId(null);
 //     setName("");
@@ -496,7 +173,16 @@
 //       let uploadedUrls = [];
 
 //       if (images.length > 0) {
-//         uploadedUrls = await uploadToCloudinary(images);
+//         try {
+//           uploadedUrls = await uploadToCloudinary(images);
+
+//           if (!Array.isArray(uploadedUrls)) {
+//             throw new Error("Image upload did not return a valid image list");
+//           }
+//         } catch (uploadError) {
+//           setErr(uploadError?.message || "Image upload failed");
+//           return;
+//         }
 //       }
 
 //       const finalImages = [...existingImages, ...uploadedUrls];
@@ -523,24 +209,26 @@
 //         }),
 //       });
 
-//       const data = await res.json();
+//       const data = await parseJsonSafe(res);
 
 //       if (!res.ok) {
-//         setErr(data?.message || "Failed to save");
+//         setErr(data?.message || "Failed to save court");
 //         return;
 //       }
 
+//       const savedCourt = data?.data || data;
+
 //       if (isEditing) {
 //         setCourts((prev) =>
-//           prev.map((court) => (court._id === editingId ? data : court))
+//           prev.map((court) => (court._id === editingId ? savedCourt : court))
 //         );
 //       } else {
-//         setCourts((prev) => [data, ...prev]);
+//         setCourts((prev) => [savedCourt, ...prev]);
 //       }
 
 //       cancelEdit();
-//     } catch {
-//       setErr("Server error");
+//     } catch (error) {
+//       setErr(error?.message || "Server error");
 //     } finally {
 //       setSaving(false);
 //     }
@@ -562,8 +250,9 @@
 //         },
 //       });
 
+//       const data = await parseJsonSafe(res);
+
 //       if (!res.ok) {
-//         const data = await res.json().catch(() => ({}));
 //         setErr(data?.message || "Failed to delete");
 //         return;
 //       }
@@ -573,8 +262,8 @@
 //       if (editingId === id) {
 //         cancelEdit();
 //       }
-//     } catch {
-//       setErr("Failed to delete");
+//     } catch (error) {
+//       setErr(error?.message || "Failed to delete");
 //     }
 //   };
 
@@ -801,6 +490,7 @@
 //   );
 // }
 
+
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { uploadToCloudinary } from "../../utils/uploadToCloudinary";
 
@@ -814,6 +504,8 @@ export default function OwnerCourts() {
   const [courts, setCourts] = useState([]);
   const [name, setName] = useState("");
   const [city, setCity] = useState("");
+  const [latitude, setLatitude] = useState("");
+  const [longitude, setLongitude] = useState("");
   const [phone, setPhone] = useState("");
   const [price, setPrice] = useState("");
 
@@ -911,6 +603,16 @@ export default function OwnerCourts() {
     setEditingId(court._id);
     setName(court.name || "");
     setCity(court.location || "");
+    setLatitude(
+      court.latitude !== undefined && court.latitude !== null
+        ? String(court.latitude)
+        : ""
+    );
+    setLongitude(
+      court.longitude !== undefined && court.longitude !== null
+        ? String(court.longitude)
+        : ""
+    );
     setPhone(court.phone || "");
     setPrice(
       court.pricePerHour !== undefined && court.pricePerHour !== null
@@ -938,6 +640,8 @@ export default function OwnerCourts() {
     setEditingId(null);
     setName("");
     setCity("");
+    setLatitude("");
+    setLongitude("");
     setPhone("");
     setPrice("");
     setImages([]);
@@ -948,12 +652,30 @@ export default function OwnerCourts() {
   };
 
   const validateForm = () => {
-    if (!name.trim() || !city.trim() || !phone.trim() || !price) {
+    if (
+      !name.trim() ||
+      !city.trim() ||
+      !phone.trim() ||
+      !price ||
+      latitude === "" ||
+      longitude === ""
+    ) {
       return "Please fill all fields";
     }
 
     if (Number.isNaN(Number(price)) || Number(price) <= 0) {
       return "Price must be a valid number";
+    }
+
+    const lat = Number(latitude);
+    const lng = Number(longitude);
+
+    if (Number.isNaN(lat) || lat < -90 || lat > 90) {
+      return "Latitude must be between -90 and 90";
+    }
+
+    if (Number.isNaN(lng) || lng < -180 || lng > 180) {
+      return "Longitude must be between -180 and 180";
     }
 
     return "";
@@ -1005,6 +727,8 @@ export default function OwnerCourts() {
         body: JSON.stringify({
           name: name.trim(),
           location: city.trim(),
+          latitude: Number(latitude),
+          longitude: Number(longitude),
           phone: phone.trim(),
           pricePerHour: Number(price),
           images: finalImages,
@@ -1109,7 +833,25 @@ export default function OwnerCourts() {
         <input
           value={city}
           onChange={(e) => setCity(e.target.value)}
-          placeholder="City"
+          placeholder="City / Address"
+          className="w-full border rounded p-2"
+        />
+
+        <input
+          type="number"
+          step="any"
+          value={latitude}
+          onChange={(e) => setLatitude(e.target.value)}
+          placeholder="Latitude (e.g. 27.7172)"
+          className="w-full border rounded p-2"
+        />
+
+        <input
+          type="number"
+          step="any"
+          value={longitude}
+          onChange={(e) => setLongitude(e.target.value)}
+          placeholder="Longitude (e.g. 85.3240)"
           className="w-full border rounded p-2"
         />
 
@@ -1267,6 +1009,11 @@ function CourtCard({ court, onEdit, onDelete }) {
 
       <div className="mt-2 font-semibold">{court.name}</div>
       <div className="text-sm text-gray-500">{court.location}</div>
+      {court.latitude != null && court.longitude != null && (
+        <div className="text-sm text-gray-500">
+          {court.latitude}, {court.longitude}
+        </div>
+      )}
       {court.phone && <div className="text-sm text-gray-500">{court.phone}</div>}
       <div className="text-green-700 font-semibold">
         Rs {court.pricePerHour}/hr

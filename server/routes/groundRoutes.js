@@ -50,10 +50,32 @@
 // export default router;
 
 
+// import express from "express";
+// import {
+//   createGround,
+//   getAllGrounds,
+//   getMyGrounds,
+//   updateGround,
+//   deleteGround,
+// } from "../controllers/groundController.js";
+// import { protect } from "../middleware/authMiddleware.js";
+
+// const router = express.Router();
+
+// router.get("/", getAllGrounds);
+// router.get("/mine", protect, getMyGrounds);
+// router.post("/", protect, createGround);
+// router.put("/:id", protect, updateGround);
+// router.delete("/:id", protect, deleteGround);
+
+// export default router;
+
+
 import express from "express";
 import {
   createGround,
   getAllGrounds,
+  getGroundById,
   getMyGrounds,
   updateGround,
   deleteGround,
@@ -64,6 +86,8 @@ const router = express.Router();
 
 router.get("/", getAllGrounds);
 router.get("/mine", protect, getMyGrounds);
+router.get("/:id", getGroundById);
+
 router.post("/", protect, createGround);
 router.put("/:id", protect, updateGround);
 router.delete("/:id", protect, deleteGround);

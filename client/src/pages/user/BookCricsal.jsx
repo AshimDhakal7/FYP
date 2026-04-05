@@ -7,6 +7,7 @@
 //   Marker,
 //   Polyline,
 //   Popup,
+//   useMap,
 // } from "react-leaflet";
 // import L from "leaflet";
 // import "leaflet/dist/leaflet.css";
@@ -78,6 +79,11 @@
 //     }
 //   }, [userLocation]);
 
+//   const saveLocalPaymentPreference = (bookingId, preference) => {
+//     if (!bookingId || !preference) return;
+//     localStorage.setItem(`booking_payment_pref_${bookingId}`, preference);
+//   };
+
 //   const handleConfirm = async (e) => {
 //     e.preventDefault();
 //     setMsg("");
@@ -119,10 +125,7 @@
 //           startTime: start,
 //           endTime: end,
 //           durationHours: hours,
-
-//           // payment choice is saved now,
-//           // actual payment happens only after owner approval on Bookings page
-//           paymentPreference, // "advance_30" or "full"
+//           paymentPreference, // "advance_30" | "full"
 //           advancePercent: paymentPreference === "advance_30" ? 30 : 100,
 //           nonRefundableHours: 2,
 //           requiresOwnerApproval: true,
@@ -135,6 +138,12 @@
 //         setMsg(data?.message || "Booking failed");
 //         setMsgType("error");
 //         return;
+//       }
+
+//       // Save the user's exact choice locally by booking ID
+//       const createdBookingId = data?._id || data?.booking?._id || null;
+//       if (createdBookingId) {
+//         saveLocalPaymentPreference(createdBookingId, paymentPreference);
 //       }
 
 //       setMsg(
@@ -306,8 +315,7 @@
 //                     )}
 //                   </div>
 //                   <p className="text-sm text-gray-600">
-//                     Pay the complete amount after owner approval for a smoother
-//                     check-in process.
+//                     Pay the complete amount after owner approval.
 //                   </p>
 //                 </button>
 //               </div>
@@ -470,6 +478,7 @@
 //   );
 // }
 
+
 import React, { useMemo, useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
@@ -478,13 +487,13 @@ import {
   Marker,
   Polyline,
   Popup,
+  useMap,
 } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
 const API_BASE = import.meta?.env?.VITE_API_BASE_URL || "http://localhost:5001";
 
-// Fix Leaflet icons
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl:
@@ -492,6 +501,40 @@ L.Icon.Default.mergeOptions({
   iconUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png",
   shadowUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png",
 });
+
+const groundIcon = new L.Icon({
+  iconUrl:
+    "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png",
+  shadowUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png",
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41],
+});
+
+const userIcon = new L.Icon({
+  iconUrl:
+    "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png",
+  shadowUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png",
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41],
+});
+
+function FitMapToMarkers({ userLocation, groundLocation }) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (userLocation && groundLocation) {
+      map.fitBounds([userLocation, groundLocation], { padding: [40, 40] });
+    } else if (groundLocation) {
+      map.setView(groundLocation, 15);
+    }
+  }, [map, userLocation, groundLocation]);
+
+  return null;
+}
 
 export default function BookCricsal() {
   const { cricsalId } = useParams();
@@ -506,6 +549,10 @@ export default function BookCricsal() {
 
   const [userLocation, setUserLocation] = useState(null);
   const [distance, setDistance] = useState(null);
+  const [ground, setGround] = useState(null);
+  const [groundLoading, setGroundLoading] = useState(true);
+  const [locating, setLocating] = useState(false);
+  const [usingTestLocation, setUsingTestLocation] = useState(false);
 
   const [paymentPreference, setPaymentPreference] = useState("advance_30");
   const [policyAccepted, setPolicyAccepted] = useState(false);
@@ -533,21 +580,96 @@ export default function BookCricsal() {
     return paymentPreference === "advance_30" ? "30% Advance" : "Full Payment";
   };
 
-  useEffect(() => {
-    navigator.geolocation?.getCurrentPosition((pos) => {
-      setUserLocation([pos.coords.latitude, pos.coords.longitude]);
-    });
-  }, []);
+  const enableLocation = () => {
+    if (!navigator.geolocation) {
+      setMsg("Geolocation is not supported in this browser.");
+      setMsgType("error");
+      return;
+    }
 
-  const groundLocation = [27.7172, 85.324];
+    setLocating(true);
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setUserLocation([pos.coords.latitude, pos.coords.longitude]);
+        setUsingTestLocation(false);
+        setMsg("");
+        setMsgType("");
+        setLocating(false);
+      },
+      (err) => {
+        console.error("Location error:", err);
+
+        let message = "Unable to get your current location.";
+        if (err.code === 1) {
+          message = "Location permission denied.";
+        } else if (err.code === 2) {
+          message =
+            "Location unavailable. You can use the test location button for now.";
+        } else if (err.code === 3) {
+          message =
+            "Location request timed out. You can retry or use the test location button.";
+        }
+
+        setMsg(message);
+        setMsgType("error");
+        setLocating(false);
+      },
+      {
+        enableHighAccuracy: false,
+        timeout: 20000,
+        maximumAge: 60000,
+      }
+    );
+  };
+
+  const useTestLocation = () => {
+    setUserLocation([27.705, 85.33]);
+    setUsingTestLocation(true);
+    setMsg("Using test location for map preview.");
+    setMsgType("success");
+  };
 
   useEffect(() => {
-    if (userLocation) {
+    const loadGround = async () => {
+      try {
+        setGroundLoading(true);
+        const res = await fetch(`${API_BASE}/api/grounds/${cricsalId}`);
+        const data = await res.json();
+
+        if (!res.ok) {
+          setMsg(data?.message || "Failed to load court");
+          setMsgType("error");
+          return;
+        }
+
+        setGround(data?.data || data);
+      } catch (error) {
+        console.error(error);
+        setMsg("Failed to load court");
+        setMsgType("error");
+      } finally {
+        setGroundLoading(false);
+      }
+    };
+
+    if (cricsalId) {
+      loadGround();
+    }
+  }, [cricsalId]);
+
+  const groundLocation =
+    ground?.latitude != null && ground?.longitude != null
+      ? [ground.latitude, ground.longitude]
+      : [27.7172, 85.324];
+
+  useEffect(() => {
+    if (userLocation && groundLocation) {
       const dist =
         L.latLng(userLocation).distanceTo(L.latLng(groundLocation)) / 1000;
       setDistance(dist.toFixed(2));
     }
-  }, [userLocation]);
+  }, [userLocation, groundLocation]);
 
   const saveLocalPaymentPreference = (bookingId, preference) => {
     if (!bookingId || !preference) return;
@@ -595,7 +717,7 @@ export default function BookCricsal() {
           startTime: start,
           endTime: end,
           durationHours: hours,
-          paymentPreference, // "advance_30" | "full"
+          paymentPreference,
           advancePercent: paymentPreference === "advance_30" ? 30 : 100,
           nonRefundableHours: 2,
           requiresOwnerApproval: true,
@@ -610,7 +732,6 @@ export default function BookCricsal() {
         return;
       }
 
-      // Save the user's exact choice locally by booking ID
       const createdBookingId = data?._id || data?.booking?._id || null;
       if (createdBookingId) {
         saveLocalPaymentPreference(createdBookingId, paymentPreference);
@@ -669,12 +790,17 @@ export default function BookCricsal() {
               <p className="text-sm text-gray-500">
                 Submit your booking request and pay after owner approval
               </p>
+              {ground?.name && (
+                <p className="mt-1 text-sm font-medium text-green-700">
+                  {ground.name}
+                </p>
+              )}
             </div>
           </div>
         </div>
 
         <div className="grid gap-6 lg:grid-cols-3">
-          <div className="lg:col-span-2 rounded-2xl border border-gray-100 bg-white p-5 sm:p-6 shadow-sm">
+          <div className="lg:col-span-2 rounded-2xl border border-gray-100 bg-white p-5 shadow-sm sm:p-6">
             <div className="mb-6">
               <label className="mb-2 block text-sm font-semibold text-gray-700">
                 Booking Date
@@ -843,7 +969,7 @@ export default function BookCricsal() {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-gray-100 bg-white p-5 sm:p-6 shadow-sm space-y-5">
+          <div className="space-y-5 rounded-2xl border border-gray-100 bg-white p-5 shadow-sm sm:p-6">
             <div>
               <h2 className="text-lg font-bold text-gray-800">Booking Summary</h2>
               <p className="text-sm text-gray-500">
@@ -896,6 +1022,15 @@ export default function BookCricsal() {
                 </div>
               )}
 
+              {ground?.location && (
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-500">Court</span>
+                  <span className="text-right text-sm font-semibold text-gray-800">
+                    {ground.location}
+                  </span>
+                </div>
+              )}
+
               {distance && (
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-500">Distance</span>
@@ -907,30 +1042,65 @@ export default function BookCricsal() {
             </div>
 
             <div>
-              <h3 className="mb-3 text-sm font-semibold text-gray-700">
-                Ground Location
-              </h3>
+              <div className="mb-3 flex items-center justify-between">
+                <h3 className="text-sm font-semibold text-gray-700">
+                  Ground Location
+                </h3>
+
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={enableLocation}
+                    disabled={locating}
+                    className="rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-blue-700 disabled:opacity-70"
+                  >
+                    {locating ? "Locating..." : "Enable Location"}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={useTestLocation}
+                    className="rounded-lg bg-gray-700 px-3 py-1.5 text-xs font-semibold text-white hover:bg-gray-800"
+                  >
+                    Use Test Location
+                  </button>
+                </div>
+              </div>
+
               <div className="h-72 overflow-hidden rounded-2xl border border-gray-200">
-                <MapContainer
-                  center={groundLocation}
-                  zoom={13}
-                  style={{ height: "100%", width: "100%" }}
-                >
-                  <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                {!groundLoading && (
+                  <MapContainer
+                    center={groundLocation}
+                    zoom={13}
+                    style={{ height: "100%", width: "100%" }}
+                  >
+                    <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
 
-                  <Marker position={groundLocation}>
-                    <Popup>Ground Location</Popup>
-                  </Marker>
+                    <FitMapToMarkers
+                      userLocation={userLocation}
+                      groundLocation={groundLocation}
+                    />
 
-                  {userLocation && (
-                    <>
-                      <Marker position={userLocation}>
-                        <Popup>Your Location</Popup>
-                      </Marker>
-                      <Polyline positions={[userLocation, groundLocation]} />
-                    </>
-                  )}
-                </MapContainer>
+                    <Marker position={groundLocation} icon={groundIcon}>
+                      <Popup>CricSal Location</Popup>
+                    </Marker>
+
+                    {userLocation && (
+                      <>
+                        <Marker position={userLocation} icon={userIcon}>
+                          <Popup>
+                            {usingTestLocation ? "Test Location" : "My Location"}
+                          </Popup>
+                        </Marker>
+
+                        <Polyline
+                          positions={[userLocation, groundLocation]}
+                          pathOptions={{ color: "blue", weight: 4 }}
+                        />
+                      </>
+                    )}
+                  </MapContainer>
+                )}
               </div>
             </div>
 
@@ -938,8 +1108,19 @@ export default function BookCricsal() {
               <p className="text-sm text-green-800">
                 {distance
                   ? `You are approximately ${distance} km away from the ground.`
-                  : "Allow location access to see your distance from the ground."}
+                  : "Tap 'Enable Location' or use 'Use Test Location' to show the route to the ground."}
               </p>
+            </div>
+
+            <div className="flex items-center gap-4 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-xs text-gray-600">
+              <div className="flex items-center gap-2">
+                <span className="inline-block h-3 w-3 rounded-full bg-green-600" />
+                CricSal
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="inline-block h-3 w-3 rounded-full bg-blue-600" />
+                My Location
+              </div>
             </div>
           </div>
         </div>
