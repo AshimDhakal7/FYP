@@ -38,6 +38,16 @@ const groundSchema = new mongoose.Schema(
       type: [String],
       default: [],
     },
+
+    status: {
+      type: String,
+      enum: ["pending", "approved", "rejected"],
+      default: "pending",
+    },
+    
+    approvedAt: Date,
+    rejectedAt: Date,
+    
     ownerId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
@@ -46,6 +56,8 @@ const groundSchema = new mongoose.Schema(
     },
   },
   { timestamps: true }
+
+  
 );
 
 export default mongoose.model("Ground", groundSchema);
