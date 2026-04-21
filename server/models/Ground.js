@@ -44,6 +44,14 @@ const groundSchema = new mongoose.Schema(
       enum: ["pending", "approved", "rejected"],
       default: "pending",
     },
+    averageRating: {
+      type: Number,
+      default: 0,
+    },
+    numReviews: {
+      type: Number,
+      default: 0,
+    },
     
     approvedAt: Date,
     rejectedAt: Date,
@@ -56,6 +64,8 @@ const groundSchema = new mongoose.Schema(
     },
   },
   { timestamps: true }
+
+  
 
   
 );

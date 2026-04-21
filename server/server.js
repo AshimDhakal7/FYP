@@ -76,6 +76,7 @@ import connectDB from "./config/dbconfig.js";
 import authRoutes from "./routes/authRoutes.js";
 import bookingRoutes from "./routes/bookingRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
+import reviewRoutes from "./routes/reviewRoutes.js";
 import groundRoutes from "./routes/groundRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
 import dashboardRoutes from "./routes/dashboardRoutes.js";
@@ -114,7 +115,7 @@ app.use(
 );
 
 app.use(express.json());
-
+app.use("/api/reviews", reviewRoutes);
 app.use("/uploads", express.static("uploads"));
 
 app.get("/", (req, res) => {
