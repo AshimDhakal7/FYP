@@ -1,10 +1,13 @@
 
-
 // import Booking from "../models/Booking.js";
 // import Ground from "../models/Ground.js";
 // import { createNotification } from "../utils/createNotification.js";
 
 // // ---------- helpers ----------
+// const ACTIVE_BOOKING_STATUSES = ["pending", "confirmed"];
+// const availabilityClients = new Map();
+// const bookingLocks = new Map();
+
 // const toMinutes = (t) => {
 //   const [h, m] = String(t).split(":").map(Number);
 //   return h * 60 + m;
@@ -23,6 +26,69 @@
 // };
 
 // const getUserId = (req) => req.user?._id || req.user?.id;
+
+// const makeAvailabilityKey = (cricsal, date) => `${cricsal}__${date}`;
+
+// const createSseMessage = (eventName, payload) =>
+//   `event: ${eventName}\ndata: ${JSON.stringify(payload)}\n\n`;
+
+// const getAvailabilityPayload = async (cricsal, date) => {
+//   return Booking.find({
+//     cricsal,
+//     date,
+//     status: { $in: ACTIVE_BOOKING_STATUSES },
+//   })
+//     .select("startTime endTime status -_id")
+//     .sort({ startTime: 1 });
+// };
+
+// const broadcastAvailabilityUpdate = async (cricsal, date) => {
+//   const key = makeAvailabilityKey(cricsal, date);
+//   const clients = availabilityClients.get(key);
+
+//   if (!clients || clients.size === 0) return;
+
+//   const payload = await getAvailabilityPayload(cricsal, date);
+//   const message = createSseMessage("slots", payload);
+
+//   for (const client of clients) {
+//     client.write(message);
+//   }
+// };
+
+// const withBookingLock = async (lockKey, work) => {
+//   while (bookingLocks.has(lockKey)) {
+//     await bookingLocks.get(lockKey);
+//   }
+
+//   let releaseLock;
+//   const lockPromise = new Promise((resolve) => {
+//     releaseLock = resolve;
+//   });
+
+//   bookingLocks.set(lockKey, lockPromise);
+
+//   try {
+//     return await work();
+//   } finally {
+//     bookingLocks.delete(lockKey);
+//     releaseLock();
+//   }
+// };
+
+// const isPastDate = (dateString) => {
+//   const todayString = new Date().toISOString().split("T")[0];
+//   return dateString < todayString;
+// };
+
+// const isPastTimeToday = (dateString, startTime) => {
+//   const todayString = new Date().toISOString().split("T")[0];
+//   if (dateString !== todayString) return false;
+
+//   const now = new Date();
+//   const currentMinutes = now.getHours() * 60 + now.getMinutes();
+//   return toMinutes(startTime) <= currentMinutes;
+// };
 
 // // ---------- controllers ----------
 
@@ -68,10 +134,18 @@
 //       return res.status(400).json({ message: "Invalid duration" });
 //     }
 
+//     if (isPastDate(date)) {
+//       return res.status(400).json({ message: "Past dates cannot be booked" });
+//     }
+
+//     if (isPastTimeToday(date, startTime)) {
+//       return res.status(400).json({ message: "Past time slots cannot be booked" });
+//     }
+
 //     const s = toMinutes(startTime);
 //     const e = toMinutes(endTime);
 
-//     if (e <= s) {
+//     if (Number.isNaN(s) || Number.isNaN(e) || e <= s) {
 //       return res.status(400).json({ message: "Invalid time range" });
 //     }
 
@@ -83,48 +157,60 @@
 //       return res.status(404).json({ message: "Cricsal/Ground not found" });
 //     }
 
-//     const existing = await Booking.find({
-//       cricsal,
-//       date,
-//       status: "confirmed",
-//     }).select("startTime endTime");
-
-//     const hasOverlap = existing.some((b) =>
-//       overlaps(s, e, toMinutes(b.startTime), toMinutes(b.endTime))
-//     );
-
-//     if (hasOverlap) {
-//       return res.status(409).json({ message: "This slot is already booked" });
-//     }
-
-//     const totalPrice = Number(groundDoc.pricePerHour || 0) * durationHours;
-
 //     const paymentPreference =
 //       req.body.paymentPreference === "full" ? "full" : "advance_30";
 
 //     const advancePercent = paymentPreference === "advance_30" ? 30 : 100;
 
-//     const booking = await Booking.create({
-//       cricsal,
-//       ground: cricsal,
-//       ownerId: groundDoc.ownerId,
-//       user: userId,
-//       date,
-//       startTime,
-//       endTime,
-//       durationHours,
-//       totalPrice,
-//       paymentPreference,
-//       advancePercent,
-//       amountPaid: 0,
-//       paymentStatusLabel: "",
-//       paymentMethod: "",
-//       khaltiPidx: "",
-//       paidAt: null,
-//       status: "pending",
+//     const lockKey = makeAvailabilityKey(cricsal, date);
+
+//     const booking = await withBookingLock(lockKey, async () => {
+//       const existing = await Booking.find({
+//         cricsal,
+//         date,
+//         status: { $in: ACTIVE_BOOKING_STATUSES },
+//       }).select("startTime endTime status");
+
+//       const conflict = existing.find((b) =>
+//         overlaps(s, e, toMinutes(b.startTime), toMinutes(b.endTime))
+//       );
+
+//       if (conflict) {
+//         return res.status(409).json({
+//           message:
+//             conflict.status === "pending"
+//               ? "This slot is pending approval"
+//               : "This slot is already booked",
+//         });
+//       }
+
+//       const totalPrice = Number(groundDoc.pricePerHour || 0) * durationHours;
+
+//       return Booking.create({
+//         cricsal,
+//         ground: cricsal,
+//         ownerId: groundDoc.ownerId,
+//         user: userId,
+//         date,
+//         startTime,
+//         endTime,
+//         durationHours,
+//         totalPrice,
+//         paymentPreference,
+//         advancePercent,
+//         amountPaid: 0,
+//         paymentStatusLabel: "",
+//         paymentMethod: "",
+//         khaltiPidx: "",
+//         paidAt: null,
+//         status: "pending",
+//       });
 //     });
 
-//     // 🔔 Notify owner about new booking request
+//     if (booking?.statusCode) {
+//       return booking;
+//     }
+
 //     await createNotification({
 //       recipient: groundDoc.ownerId,
 //       recipientRole: "owner",
@@ -143,6 +229,8 @@
 //         endTime,
 //       },
 //     });
+
+//     await broadcastAvailabilityUpdate(cricsal, date);
 
 //     return res.status(201).json(booking);
 //   } catch (err) {
@@ -211,7 +299,6 @@
 //     booking.cancelledAt = new Date();
 //     await booking.save();
 
-//     // Optional: notify owner when player cancels
 //     await createNotification({
 //       recipient: booking.ownerId,
 //       recipientRole: "owner",
@@ -227,6 +314,8 @@
 //         bookingId: booking._id,
 //       },
 //     });
+
+//     await broadcastAvailabilityUpdate(booking.cricsal?._id || booking.cricsal, booking.date);
 
 //     return res.json(booking);
 //   } catch (err) {
@@ -244,17 +333,64 @@
 //       return res.status(400).json({ message: "Missing cricsal/date" });
 //     }
 
-//     const booked = await Booking.find({
-//       cricsal,
-//       date,
-//       status: "confirmed",
-//     }).select("startTime endTime -_id");
-
+//     const booked = await getAvailabilityPayload(cricsal, date);
 //     return res.json(booked);
 //   } catch (err) {
 //     console.error("GET BOOKED SLOTS ERROR:", err);
 //     return res.status(500).json({ message: "Server error" });
 //   }
+// };
+
+// // LIVE SLOT STREAM
+// export const getBookedSlotsStream = async (req, res) => {
+//   const { cricsal, date } = req.query;
+
+//   if (!cricsal || !date) {
+//     return res.status(400).json({ message: "Missing cricsal/date" });
+//   }
+
+//   const key = makeAvailabilityKey(cricsal, date);
+//   const origin = req.headers.origin || "*";
+
+//   res.setHeader("Content-Type", "text/event-stream");
+//   res.setHeader("Cache-Control", "no-cache, no-transform");
+//   res.setHeader("Connection", "keep-alive");
+//   res.setHeader("Access-Control-Allow-Origin", origin);
+//   res.setHeader("X-Accel-Buffering", "no");
+//   res.flushHeaders?.();
+
+//   if (!availabilityClients.has(key)) {
+//     availabilityClients.set(key, new Set());
+//   }
+
+//   availabilityClients.get(key).add(res);
+
+//   res.write(createSseMessage("connected", { ok: true }));
+
+//   try {
+//     const initialPayload = await getAvailabilityPayload(cricsal, date);
+//     res.write(createSseMessage("slots", initialPayload));
+//   } catch (error) {
+//     res.write(createSseMessage("error", { message: "Failed to load slots" }));
+//   }
+
+//   const heartbeat = setInterval(() => {
+//     res.write(": keep-alive\n\n");
+//   }, 25000);
+
+//   req.on("close", () => {
+//     clearInterval(heartbeat);
+
+//     const clients = availabilityClients.get(key);
+//     if (clients) {
+//       clients.delete(res);
+//       if (clients.size === 0) {
+//         availabilityClients.delete(key);
+//       }
+//     }
+
+//     res.end();
+//   });
 // };
 
 // // APPROVE BOOKING (owner)
@@ -275,28 +411,72 @@
 //       return res.status(403).json({ message: "Not allowed" });
 //     }
 
-//     booking.status = "confirmed";
-//     await booking.save();
+//     const lockKey = makeAvailabilityKey(booking.cricsal?._id || booking.cricsal, booking.date);
 
-//     // 🔔 Notify user after approval
+//     const result = await withBookingLock(lockKey, async () => {
+//       const freshBooking = await Booking.findById(id)
+//         .populate("cricsal", "name location")
+//         .populate("user", "name");
+
+//       if (!freshBooking) {
+//         return res.status(404).json({ message: "Booking not found" });
+//       }
+
+//       if (freshBooking.status === "cancelled") {
+//         return res.status(400).json({ message: "Cancelled booking cannot be approved" });
+//       }
+
+//       const others = await Booking.find({
+//         _id: { $ne: freshBooking._id },
+//         cricsal: freshBooking.cricsal?._id || freshBooking.cricsal,
+//         date: freshBooking.date,
+//         status: "confirmed",
+//       }).select("startTime endTime");
+
+//       const hasConflict = others.some((b) =>
+//         overlaps(
+//           toMinutes(freshBooking.startTime),
+//           toMinutes(freshBooking.endTime),
+//           toMinutes(b.startTime),
+//           toMinutes(b.endTime)
+//         )
+//       );
+
+//       if (hasConflict) {
+//         return res.status(409).json({
+//           message: "This slot has already been confirmed for another booking",
+//         });
+//       }
+
+//       freshBooking.status = "confirmed";
+//       await freshBooking.save();
+//       return freshBooking;
+//     });
+
+//     if (result?.statusCode) {
+//       return result;
+//     }
+
 //     await createNotification({
-//       recipient: booking.user._id,
+//       recipient: result.user._id,
 //       recipientRole: "user",
 //       type: "booking_approved",
 //       title: "Booking approved",
 //       message: `Your booking for ${
-//         booking.cricsal?.name || "the ground"
-//       } on ${booking.date} from ${booking.startTime} to ${
-//         booking.endTime
+//         result.cricsal?.name || "the ground"
+//       } on ${result.date} from ${result.startTime} to ${
+//         result.endTime
 //       } has been approved.`,
 //       link: "/my-bookings",
 //       data: {
-//         bookingId: booking._id,
-//         cricsalId: booking.cricsal?._id,
+//         bookingId: result._id,
+//         cricsalId: result.cricsal?._id,
 //       },
 //     });
 
-//     return res.json(booking);
+//     await broadcastAvailabilityUpdate(result.cricsal?._id || result.cricsal, result.date);
+
+//     return res.json(result);
 //   } catch (err) {
 //     console.error("APPROVE BOOKING ERROR:", err);
 //     return res.status(500).json({ message: "Server error" });
@@ -324,7 +504,6 @@
 //     booking.status = "cancelled";
 //     await booking.save();
 
-//     // 🔔 Notify user after decline
 //     await createNotification({
 //       recipient: booking.user._id,
 //       recipientRole: "user",
@@ -342,6 +521,8 @@
 //       },
 //     });
 
+//     await broadcastAvailabilityUpdate(booking.cricsal?._id || booking.cricsal, booking.date);
+
 //     return res.json(booking);
 //   } catch (err) {
 //     console.error("DECLINE BOOKING ERROR:", err);
@@ -351,9 +532,13 @@
 
 
 
+
+
 import Booking from "../models/Booking.js";
 import Ground from "../models/Ground.js";
 import { createNotification } from "../utils/createNotification.js";
+import sendEmail from "../utils/sendEmail.js";
+import { bookingConfirmedEmail, bookingDeclinedEmail} from "../utils/emailTemplate.js";
 
 // ---------- helpers ----------
 const ACTIVE_BOOKING_STATUSES = ["pending", "confirmed"];
@@ -667,7 +852,10 @@ export const cancelBooking = async (req, res) => {
       },
     });
 
-    await broadcastAvailabilityUpdate(booking.cricsal?._id || booking.cricsal, booking.date);
+    await broadcastAvailabilityUpdate(
+      booking.cricsal?._id || booking.cricsal,
+      booking.date
+    );
 
     return res.json(booking);
   } catch (err) {
@@ -753,7 +941,7 @@ export const approveBooking = async (req, res) => {
 
     const booking = await Booking.findById(id)
       .populate("cricsal", "name location")
-      .populate("user", "name");
+      .populate("user", "name email");
 
     if (!booking) {
       return res.status(404).json({ message: "Booking not found" });
@@ -763,19 +951,24 @@ export const approveBooking = async (req, res) => {
       return res.status(403).json({ message: "Not allowed" });
     }
 
-    const lockKey = makeAvailabilityKey(booking.cricsal?._id || booking.cricsal, booking.date);
+    const lockKey = makeAvailabilityKey(
+      booking.cricsal?._id || booking.cricsal,
+      booking.date
+    );
 
     const result = await withBookingLock(lockKey, async () => {
       const freshBooking = await Booking.findById(id)
         .populate("cricsal", "name location")
-        .populate("user", "name");
+        .populate("user", "name email");
 
       if (!freshBooking) {
         return res.status(404).json({ message: "Booking not found" });
       }
 
       if (freshBooking.status === "cancelled") {
-        return res.status(400).json({ message: "Cancelled booking cannot be approved" });
+        return res
+          .status(400)
+          .json({ message: "Cancelled booking cannot be approved" });
       }
 
       const others = await Booking.find({
@@ -826,7 +1019,29 @@ export const approveBooking = async (req, res) => {
       },
     });
 
-    await broadcastAvailabilityUpdate(result.cricsal?._id || result.cricsal, result.date);
+    if (result.user?.email) {
+      await sendEmail({
+        to: result.user.email,
+        subject: `CricBook Booking Confirmed - ${
+          result.cricsal?.name || "Ground"
+        }`,
+        html: bookingConfirmedEmail({
+          userName: result.user?.name,
+          groundName: result.cricsal?.name,
+          groundLocation: result.cricsal?.location,
+          date: result.date,
+          startTime: result.startTime,
+          endTime: result.endTime,
+          totalPrice: result.totalPrice,
+          paymentStatusLabel: result.paymentStatusLabel,
+        }),
+      });
+    }
+
+    await broadcastAvailabilityUpdate(
+      result.cricsal?._id || result.cricsal,
+      result.date
+    );
 
     return res.json(result);
   } catch (err) {
@@ -843,7 +1058,8 @@ export const declineBooking = async (req, res) => {
 
     const booking = await Booking.findById(id)
       .populate("cricsal", "name location")
-      .populate("user", "name");
+      // ✅ FIX: include email
+      .populate("user", "name email");
 
     if (!booking) {
       return res.status(404).json({ message: "Booking not found" });
@@ -853,9 +1069,11 @@ export const declineBooking = async (req, res) => {
       return res.status(403).json({ message: "Not allowed" });
     }
 
+  
     booking.status = "cancelled";
     await booking.save();
 
+    // Notification
     await createNotification({
       recipient: booking.user._id,
       recipientRole: "user",
@@ -873,7 +1091,28 @@ export const declineBooking = async (req, res) => {
       },
     });
 
-    await broadcastAvailabilityUpdate(booking.cricsal?._id || booking.cricsal, booking.date);
+    // ADD EMAIL HERE
+    if (booking.user?.email) {
+      await sendEmail({
+        to: booking.user.email,
+        subject: `CricBook Booking Declined - ${booking.cricsal?.name || "Ground"}`,
+        html: bookingDeclinedEmail({
+          userName: booking.user?.name,
+          groundName: booking.cricsal?.name,
+          groundLocation: booking.cricsal?.location,
+          date: booking.date,
+          startTime: booking.startTime,
+          endTime: booking.endTime,
+          totalPrice: booking.totalPrice,
+          paymentStatusLabel: booking.paymentStatusLabel,
+        }),
+      });
+    }
+
+    await broadcastAvailabilityUpdate(
+      booking.cricsal?._id || booking.cricsal,
+      booking.date
+    );
 
     return res.json(booking);
   } catch (err) {
