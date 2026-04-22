@@ -182,6 +182,7 @@ import AdminUsers from "./pages/admin/AdminUsers";
 import AdminOwners from "./pages/admin/AdminOwners";
 import AdminGrounds from "./pages/admin/AdminGrounds";
 import AdminPayments from "./pages/admin/AdminPayments";
+import AdminReviews from "./pages/admin/AdminReviews";
 
 import InvoiceVerification from "./pages/InvoiceVerification";
 
@@ -288,6 +289,7 @@ function AppRoutes() {
             <Route path="grounds" element={<AdminGrounds />} />
             <Route path="bookings" element={<AdminBookings />} />
             <Route path="payments" element={<AdminPayments />} />
+            <Route path="/admin/reviews" element={<AdminReviews />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/" replace />} />

@@ -17,6 +17,7 @@ function getPageTitle(pathname) {
   if (pathname.includes("/grounds")) return "Grounds Management";
   if (pathname.includes("/bookings")) return "Bookings Management";
   if (pathname.includes("/payments")) return "Payments Management";
+  if (pathname.includes("/reviews")) return "Reviews Monitoring";
   return "Superadmin Panel";
 }
 
@@ -54,6 +55,7 @@ export default function AdminLayout() {
       { name: "Grounds", to: "/admin/grounds", icon: "🏟️" },
       { name: "Bookings", to: "/admin/bookings", icon: "📅" },
       { name: "Payments", to: "/admin/payments", icon: "💳" },
+      { name: "Reviews", to: "/admin/reviews", icon: "⭐" },
     ],
     []
   );

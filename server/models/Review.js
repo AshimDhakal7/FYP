@@ -34,6 +34,15 @@ const reviewSchema = new mongoose.Schema(
         type: String,
         default: "",
       },
+
+      isHidden: {
+        type: Boolean,
+        default: false,
+      },
+      adminNote: {
+        type: String,
+        default: "",
+      },
   },
   { timestamps: true }
 );

@@ -200,3 +200,58 @@ export const getOwnerReviews = async (req, res) => {
       res.status(500).json({ message: "Server error" });
     }
   };
+  // GET ALL REVIEWS FOR ADMIN
+export const getAdminReviews = async (req, res) => {
+  try {
+    const reviews = await Review.find({})
+      .populate("user", "name email")
+      .populate("cricsal", "name location ownerId")
+      .sort({ createdAt: -1 });
+
+    return res.json(reviews);
+  } catch (err) {
+    console.error("GET ADMIN REVIEWS ERROR:", err);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+// TOGGLE REVIEW VISIBILITY
+export const toggleReviewVisibility = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const review = await Review.findById(id);
+    if (!review) {
+      return res.status(404).json({ message: "Review not found" });
+    }
+
+    review.isHidden = !review.isHidden;
+    await review.save();
+
+    return res.json(review);
+  } catch (err) {
+    console.error("TOGGLE REVIEW VISIBILITY ERROR:", err);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+// SAVE ADMIN NOTE
+export const saveAdminReviewNote = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { adminNote } = req.body;
+
+    const review = await Review.findById(id);
+    if (!review) {
+      return res.status(404).json({ message: "Review not found" });
+    }
+
+    review.adminNote = adminNote || "";
+    await review.save();
+
+    return res.json(review);
+  } catch (err) {
+    console.error("SAVE ADMIN REVIEW NOTE ERROR:", err);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
