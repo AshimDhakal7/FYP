@@ -18,11 +18,23 @@ const loyaltyTransactionSchema = new mongoose.Schema(
 
     type: {
       type: String,
-      enum: ["earn", "redeem", "refund", "bonus"],
+      enum: ["earn", "redeem", "penalty", "refund", "bonus"],
       required: true,
     },
 
     points: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+
+    direction: {
+      type: String,
+      enum: ["credit", "debit"],
+      required: true,
+    },
+
+    balanceAfter: {
       type: Number,
       required: true,
       min: 0,

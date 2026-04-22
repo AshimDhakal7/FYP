@@ -1,7 +1,8 @@
-
 // import Booking from "../models/Booking.js";
 // import Ground from "../models/Ground.js";
 // import { createNotification } from "../utils/createNotification.js";
+// import sendEmail from "../utils/sendEmail.js";
+// import { bookingConfirmedEmail, bookingDeclinedEmail} from "../utils/emailTemplate.js";
 
 // // ---------- helpers ----------
 // const ACTIVE_BOOKING_STATUSES = ["pending", "confirmed"];
@@ -315,7 +316,10 @@
 //       },
 //     });
 
-//     await broadcastAvailabilityUpdate(booking.cricsal?._id || booking.cricsal, booking.date);
+//     await broadcastAvailabilityUpdate(
+//       booking.cricsal?._id || booking.cricsal,
+//       booking.date
+//     );
 
 //     return res.json(booking);
 //   } catch (err) {
@@ -401,7 +405,7 @@
 
 //     const booking = await Booking.findById(id)
 //       .populate("cricsal", "name location")
-//       .populate("user", "name");
+//       .populate("user", "name email");
 
 //     if (!booking) {
 //       return res.status(404).json({ message: "Booking not found" });
@@ -411,19 +415,24 @@
 //       return res.status(403).json({ message: "Not allowed" });
 //     }
 
-//     const lockKey = makeAvailabilityKey(booking.cricsal?._id || booking.cricsal, booking.date);
+//     const lockKey = makeAvailabilityKey(
+//       booking.cricsal?._id || booking.cricsal,
+//       booking.date
+//     );
 
 //     const result = await withBookingLock(lockKey, async () => {
 //       const freshBooking = await Booking.findById(id)
 //         .populate("cricsal", "name location")
-//         .populate("user", "name");
+//         .populate("user", "name email");
 
 //       if (!freshBooking) {
 //         return res.status(404).json({ message: "Booking not found" });
 //       }
 
 //       if (freshBooking.status === "cancelled") {
-//         return res.status(400).json({ message: "Cancelled booking cannot be approved" });
+//         return res
+//           .status(400)
+//           .json({ message: "Cancelled booking cannot be approved" });
 //       }
 
 //       const others = await Booking.find({
@@ -474,7 +483,29 @@
 //       },
 //     });
 
-//     await broadcastAvailabilityUpdate(result.cricsal?._id || result.cricsal, result.date);
+//     if (result.user?.email) {
+//       await sendEmail({
+//         to: result.user.email,
+//         subject: `CricBook Booking Confirmed - ${
+//           result.cricsal?.name || "Ground"
+//         }`,
+//         html: bookingConfirmedEmail({
+//           userName: result.user?.name,
+//           groundName: result.cricsal?.name,
+//           groundLocation: result.cricsal?.location,
+//           date: result.date,
+//           startTime: result.startTime,
+//           endTime: result.endTime,
+//           totalPrice: result.totalPrice,
+//           paymentStatusLabel: result.paymentStatusLabel,
+//         }),
+//       });
+//     }
+
+//     await broadcastAvailabilityUpdate(
+//       result.cricsal?._id || result.cricsal,
+//       result.date
+//     );
 
 //     return res.json(result);
 //   } catch (err) {
@@ -491,7 +522,8 @@
 
 //     const booking = await Booking.findById(id)
 //       .populate("cricsal", "name location")
-//       .populate("user", "name");
+//       // ✅ FIX: include email
+//       .populate("user", "name email");
 
 //     if (!booking) {
 //       return res.status(404).json({ message: "Booking not found" });
@@ -501,9 +533,11 @@
 //       return res.status(403).json({ message: "Not allowed" });
 //     }
 
+  
 //     booking.status = "cancelled";
 //     await booking.save();
 
+//     // Notification
 //     await createNotification({
 //       recipient: booking.user._id,
 //       recipientRole: "user",
@@ -521,7 +555,28 @@
 //       },
 //     });
 
-//     await broadcastAvailabilityUpdate(booking.cricsal?._id || booking.cricsal, booking.date);
+//     // ADD EMAIL HERE
+//     if (booking.user?.email) {
+//       await sendEmail({
+//         to: booking.user.email,
+//         subject: `CricBook Booking Declined - ${booking.cricsal?.name || "Ground"}`,
+//         html: bookingDeclinedEmail({
+//           userName: booking.user?.name,
+//           groundName: booking.cricsal?.name,
+//           groundLocation: booking.cricsal?.location,
+//           date: booking.date,
+//           startTime: booking.startTime,
+//           endTime: booking.endTime,
+//           totalPrice: booking.totalPrice,
+//           paymentStatusLabel: booking.paymentStatusLabel,
+//         }),
+//       });
+//     }
+
+//     await broadcastAvailabilityUpdate(
+//       booking.cricsal?._id || booking.cricsal,
+//       booking.date
+//     );
 
 //     return res.json(booking);
 //   } catch (err) {
@@ -532,18 +587,27 @@
 
 
 
-
-
 import Booking from "../models/Booking.js";
 import Ground from "../models/Ground.js";
+import User from "../models/User.js";
+import LoyaltyTransaction from "../models/LoyaltyTransaction.js";
 import { createNotification } from "../utils/createNotification.js";
 import sendEmail from "../utils/sendEmail.js";
-import { bookingConfirmedEmail, bookingDeclinedEmail} from "../utils/emailTemplate.js";
+import {
+  bookingConfirmedEmail,
+  bookingDeclinedEmail,
+} from "../utils/emailTemplate.js";
 
 // ---------- helpers ----------
 const ACTIVE_BOOKING_STATUSES = ["pending", "confirmed"];
 const availabilityClients = new Map();
 const bookingLocks = new Map();
+
+const LOYALTY_RULES = {
+  NORMAL_CANCELLATION_PENALTY: 40,
+  LATE_CANCELLATION_PENALTY: 120,
+  LATE_CANCELLATION_WINDOW_HOURS: 2,
+};
 
 const toMinutes = (t) => {
   const [h, m] = String(t).split(":").map(Number);
@@ -625,6 +689,47 @@ const isPastTimeToday = (dateString, startTime) => {
   const now = new Date();
   const currentMinutes = now.getHours() * 60 + now.getMinutes();
   return toMinutes(startTime) <= currentMinutes;
+};
+
+const isLateCancellation = (bookingDate, startTime) => {
+  if (!bookingDate || !startTime) return false;
+
+  const [hours, minutes] = String(startTime).split(":").map(Number);
+  if (Number.isNaN(hours) || Number.isNaN(minutes)) return false;
+
+  const gameStart = new Date(
+    `${bookingDate}T${String(hours).padStart(2, "0")}:${String(minutes).padStart(
+      2,
+      "0"
+    )}:00`
+  );
+
+  const now = new Date();
+  const diffMs = gameStart.getTime() - now.getTime();
+  const diffHours = diffMs / (1000 * 60 * 60);
+
+  return diffHours <= LOYALTY_RULES.LATE_CANCELLATION_WINDOW_HOURS;
+};
+
+const applyLoyaltyPenalty = async ({ user, booking, points, description }) => {
+  const currentBalance = Math.max(0, Number(user?.loyaltyPoints || 0));
+  const nextBalance = Math.max(0, currentBalance - Number(points || 0));
+
+  user.loyaltyPoints = nextBalance;
+  await user.save();
+
+  await LoyaltyTransaction.create({
+    user: user._id,
+    booking: booking._id,
+    type: "penalty",
+    points: Number(points || 0),
+    direction: "debit",
+    balanceAfter: nextBalance,
+    amountValue: 0,
+    description,
+  });
+
+  return nextBalance;
 };
 
 // ---------- controllers ----------
@@ -740,6 +845,12 @@ export const createBooking = async (req, res) => {
         paymentMethod: "",
         khaltiPidx: "",
         paidAt: null,
+        pointsEarned: 0,
+        pointsRedeemed: 0,
+        discountFromPoints: 0,
+        loyaltyAwarded: false,
+        loyaltyRedeemed: false,
+        loyaltyPenaltyApplied: false,
         status: "pending",
       });
     });
@@ -832,8 +943,32 @@ export const cancelBooking = async (req, res) => {
       return res.json(booking);
     }
 
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
     booking.status = "cancelled";
     booking.cancelledAt = new Date();
+
+    if (booking.loyaltyPenaltyApplied !== true) {
+      const late = isLateCancellation(booking.date, booking.startTime);
+      const penalty = late
+        ? LOYALTY_RULES.LATE_CANCELLATION_PENALTY
+        : LOYALTY_RULES.NORMAL_CANCELLATION_PENALTY;
+
+      await applyLoyaltyPenalty({
+        user,
+        booking,
+        points: penalty,
+        description: late
+          ? "Late cancellation penalty applied"
+          : "Normal cancellation penalty applied",
+      });
+
+      booking.loyaltyPenaltyApplied = true;
+    }
+
     await booking.save();
 
     await createNotification({
@@ -1058,7 +1193,6 @@ export const declineBooking = async (req, res) => {
 
     const booking = await Booking.findById(id)
       .populate("cricsal", "name location")
-      // ✅ FIX: include email
       .populate("user", "name email");
 
     if (!booking) {
@@ -1069,11 +1203,9 @@ export const declineBooking = async (req, res) => {
       return res.status(403).json({ message: "Not allowed" });
     }
 
-  
     booking.status = "cancelled";
     await booking.save();
 
-    // Notification
     await createNotification({
       recipient: booking.user._id,
       recipientRole: "user",
@@ -1091,7 +1223,6 @@ export const declineBooking = async (req, res) => {
       },
     });
 
-    // ADD EMAIL HERE
     if (booking.user?.email) {
       await sendEmail({
         to: booking.user.email,

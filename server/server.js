@@ -1,73 +1,3 @@
-
-// import express from "express";
-// import cors from "cors";
-// import dotenv from "dotenv";
-// import connectDB from "./config/dbconfig.js";
-
-// import authRoutes from "./routes/authRoutes.js";
-// import bookingRoutes from "./routes/bookingRoutes.js";
-// import userRoutes from "./routes/userRoutes.js";
-// import groundRoutes from "./routes/groundRoutes.js";
-// import paymentRoutes from "./routes/paymentRoutes.js";
-// import dashboardRoutes from "./routes/dashboardRoutes.js";
-
-// import reportRoutes from "./routes/reportRoutes.js";
-// import adminRoutes from "./routes/adminRoutes.js";
-
-// import notificationRoutes from "./routes/notificationRoutes.js";
-// // 🔥 Load env FIRST
-// dotenv.config();
-
-// // 🔥 Connect DB
-// await connectDB();
-
-// const app = express();
-
-// // ---- Middleware ----
-// app.use(
-//   cors({
-//     origin: ["http://localhost:5173", "http://localhost:3000"],
-//     credentials: true,
-//   })
-// );
-
-// app.use(express.json());
-
-// //  Static 
-// app.use("/uploads", express.static("uploads"));
-
-// //  Health 
-// app.get("/", (req, res) => {
-//   res.send("✅ CricBook API is running");
-// });
-
-// //  Routes 
-// app.use("/api/auth", authRoutes);
-// app.use("/api/users", userRoutes);
-// app.use("/api/bookings", bookingRoutes);
-// app.use("/api/grounds", groundRoutes);
-// app.use("/api/dashboard", dashboardRoutes);
-
-// // PAYMENT ROUTE 
-// app.use("/api/payment", paymentRoutes);
-
-// //Download report|owner
-// app.use("/api/reports", reportRoutes);
-
-// // Admin routes
-// app.use("/api/admin", adminRoutes);
-
-// //Notification
-// app.use("/api/notifications", notificationRoutes);
-
-// // ---- Start ----
-// const PORT = process.env.PORT || 5001;
-
-// app.listen(PORT, () => {
-//   console.log(`🚀 Server running: http://localhost:${PORT}`);
-// });
-
-
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
@@ -83,6 +13,7 @@ import dashboardRoutes from "./routes/dashboardRoutes.js";
 import reportRoutes from "./routes/reportRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import notificationRoutes from "./routes/notificationRoutes.js";
+import loyaltyRoutes from "./routes/loyaltyRoutes.js";
 
 dotenv.config();
 
@@ -139,6 +70,7 @@ app.use("/api/payment", paymentRoutes);
 app.use("/api/reports", reportRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/notifications", notificationRoutes);
+app.use("/api/loyalty", loyaltyRoutes);
 
 app.use((err, req, res, next) => {
   if (err?.message?.startsWith("CORS blocked")) {

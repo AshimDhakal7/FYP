@@ -235,25 +235,31 @@ const bookingSchema = new mongoose.Schema(
     pointsEarned: {
       type: Number,
       default: 0,
-      min: 0,
     },
-
+    
     pointsRedeemed: {
       type: Number,
       default: 0,
-      min: 0,
     },
-
-    discountApplied: {
+    
+    discountFromPoints: {
       type: Number,
       default: 0,
-      min: 0,
     },
-
-    rewardStatus: {
-      type: String,
-      enum: ["none", "earned", "reversed"],
-      default: "none",
+    
+    loyaltyAwarded: {
+      type: Boolean,
+      default: false,
+    },
+    
+    loyaltyPenaltyApplied: {
+      type: Boolean,
+      default: false,
+    },
+    
+    loyaltyRedeemed: {
+      type: Boolean,
+      default: false,
     },
   },
   { timestamps: true }
