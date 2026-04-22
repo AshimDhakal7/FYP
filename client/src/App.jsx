@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 
@@ -23,6 +22,7 @@ import RequireAuth from "./components/RequireAuth";
 import Profile from "./pages/user/UserProfile";
 import EditProfile from "./pages/user/EditProfile";
 import GroundDetails from "./pages/user/GroundDetails";
+import LoyaltyHistory from "./pages/user/LoyaltyHistory";
 
 import OwnerLayout from "./pages/owner/OwnerLayout";
 import OwnerDashboard from "./pages/owner/OwnerDashboard";
@@ -38,9 +38,9 @@ import AdminOwners from "./pages/admin/AdminOwners";
 import AdminGrounds from "./pages/admin/AdminGrounds";
 import AdminPayments from "./pages/admin/AdminPayments";
 import AdminReviews from "./pages/admin/AdminReviews";
+import AdminLoyalty from "./pages/admin/AdminLoyalty";
 
 import InvoiceVerification from "./pages/InvoiceVerification";
-import LoyaltyHistory from "./pages/user/LoyaltyHistory";
 
 import "./App.css";
 
@@ -63,6 +63,7 @@ function AppRoutes() {
           <Route path="/reset-password/:token" element={<ResetPassword />} />
           <Route path="/ground/:id" element={<GroundDetails />} />
           <Route path="/invoice/:bookingId" element={<InvoiceVerification />} />
+
           <Route
             path="/home"
             element={
@@ -71,14 +72,6 @@ function AppRoutes() {
               </RequireAuth>
             }
           />
-          <Route
-  path="/loyalty"
-  element={
-    <RequireAuth>
-      <LoyaltyHistory />
-    </RequireAuth>
-  }
-/>
 
           <Route
             path="/profile"
@@ -90,10 +83,10 @@ function AppRoutes() {
           />
 
           <Route
-            path="/book/:cricsalId"
+            path="/profile/edit"
             element={
               <RequireAuth>
-                <BookCricsal />
+                <EditProfile />
               </RequireAuth>
             }
           />
@@ -108,6 +101,15 @@ function AppRoutes() {
           />
 
           <Route
+            path="/book/:cricsalId"
+            element={
+              <RequireAuth>
+                <BookCricsal />
+              </RequireAuth>
+            }
+          />
+
+          <Route
             path="/bookings"
             element={
               <RequireAuth>
@@ -117,10 +119,10 @@ function AppRoutes() {
           />
 
           <Route
-            path="/profile/edit"
+            path="/loyalty"
             element={
               <RequireAuth>
-                <EditProfile />
+                <LoyaltyHistory />
               </RequireAuth>
             }
           />
@@ -153,8 +155,8 @@ function AppRoutes() {
             <Route path="grounds" element={<AdminGrounds />} />
             <Route path="bookings" element={<AdminBookings />} />
             <Route path="payments" element={<AdminPayments />} />
-            <Route path="/admin/reviews" element={<AdminReviews />} />
-  
+            <Route path="reviews" element={<AdminReviews />} />
+            <Route path="loyalty" element={<AdminLoyalty />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/" replace />} />

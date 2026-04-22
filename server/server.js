@@ -14,6 +14,8 @@ import reportRoutes from "./routes/reportRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import notificationRoutes from "./routes/notificationRoutes.js";
 import loyaltyRoutes from "./routes/loyaltyRoutes.js";
+import adminLoyaltyRoutes from "./routes/adminLoyaltyRoutes.js";
+import adminLoyaltyStatsRoutes from "./routes/adminLoyaltyStatsRoutes.js";
 
 dotenv.config();
 
@@ -71,6 +73,8 @@ app.use("/api/reports", reportRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/loyalty", loyaltyRoutes);
+app.use("/api/admin/loyalty-settings", adminLoyaltyRoutes);
+app.use("/api/admin/loyalty/stats", adminLoyaltyStatsRoutes);
 
 app.use((err, req, res, next) => {
   if (err?.message?.startsWith("CORS blocked")) {
