@@ -1,185 +1,17 @@
-// import React, { useEffect, useState, useMemo } from "react";
-// import { Link, useNavigate } from "react-router-dom";
-
-// const API_BASE = import.meta?.env?.VITE_API_BASE_URL || "http://localhost:5001";
-
-// export default function EditProfile() {
-//   const navigate = useNavigate();
-
-//   // ---------- state ----------
-//   const [form, setForm] = useState({
-//     name: "",
-//     email: "",
-//     contactnumber: "",
-//   });
-
-//   const [profilePicture, setProfilePicture] = useState(null);
-//   const [loading, setLoading] = useState(false);
-//   const [err, setErr] = useState("");
-//   const [msg, setMsg] = useState("");
-
-//   // ---------- load user ----------
-//   useEffect(() => {
-//     try {
-//       const u = JSON.parse(localStorage.getItem("user")) || {};
-//       setForm({
-//         name: u.name || "",
-//         email: u.email || "",
-//         contactnumber: u.contactnumber || u.phone || "",
-//       });
-//     } catch {
-//       setForm({ name: "", email: "", contactnumber: "" });
-//     }
-//   }, []);
-
-//   // ---------- token ----------
-//   const token = useMemo(() => {
-//     return (
-//       localStorage.getItem("token") ||
-//       localStorage.getItem("accessToken") ||
-//       localStorage.getItem("authToken") ||
-//       ""
-//     );
-//   }, []);
-
-//   // ---------- input ----------
-//   const onChange = (e) => {
-//     setErr("");
-//     setMsg("");
-//     setForm((p) => ({ ...p, [e.target.name]: e.target.value }));
-//   };
-
-//   // ---------- submit ----------
-//   const onSubmit = async (e) => {
-//     e.preventDefault();
-//     setLoading(true);
-//     setErr("");
-//     setMsg("");
-
-//     try {
-//       const formData = new FormData();
-
-//       formData.append("name", form.name);
-//       formData.append("email", form.email);
-
-//       // send both (backend compatibility)
-//       formData.append("contactnumber", form.contactnumber);
-//       formData.append("phone", form.contactnumber);
-
-//       if (profilePicture) {
-//         formData.append("profilePicture", profilePicture);
-//       }
-
-//       const res = await fetch(`${API_BASE}/api/users/me`, {
-//         method: "PUT",
-//         headers: {
-//           Authorization: `Bearer ${token}`,
-//         },
-//         body: formData,
-//       });
-
-//       const data = await res.json().catch(() => null);
-
-//       if (!res.ok) throw new Error(data?.message || "Update failed");
-
-//       const updatedUser = {
-//         ...JSON.parse(localStorage.getItem("user") || "{}"),
-//         ...data,
-//       };
-      
-//       localStorage.setItem("user", JSON.stringify(updatedUser));
-//       window.dispatchEvent(new Event("userUpdated"));
-
-//       setMsg("Profile updated successfully!");
-//       setTimeout(() => navigate("/profile"), 800);
-//     } catch (e2) {
-//       setErr(e2.message || "Something went wrong");
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
-
-//   // ---------- initials ----------
-//   const initials = useMemo(() => {
-//     const raw = String(form?.name || form?.email || "User").trim();
-//     const parts = raw.split(" ").filter(Boolean);
-//     return ((parts[0]?.[0] || "U") + (parts[1]?.[0] || "")).toUpperCase();
-//   }, [form]);
-
-//   return (
-//     <div className="min-h-screen bg-gray-50 px-4 py-10">
-//       <div className="max-w-4xl mx-auto">
-
-//         {/* header */}
-//         <div className="mb-6 flex justify-between">
-//           <div>
-//             <h1 className="text-2xl font-bold">Edit Profile</h1>
-//             <p className="text-sm text-gray-600">Update your info</p>
-//           </div>
-
-//           <Link to="/profile" className="border px-4 py-2 rounded">
-//             ← Back
-//           </Link>
-//         </div>
-
-//         {/* form */}
-//         <form onSubmit={onSubmit} className="bg-white p-6 rounded-xl shadow space-y-4">
-
-//           {/* image */}
-//           <input
-//             type="file"
-//             accept="image/*"
-//             onChange={(e) => setProfilePicture(e.target.files[0])}
-//           />
-
-//           {/* name */}
-//           <input
-//             name="name"
-//             value={form.name}
-//             onChange={onChange}
-//             placeholder="Name"
-//             className="w-full border p-3 rounded"
-//           />
-
-//           {/* email */}
-//           <input
-//             name="email"
-//             value={form.email}
-//             onChange={onChange}
-//             placeholder="Email"
-//             className="w-full border p-3 rounded"
-//           />
-
-//           {/* phone */}
-//           <input
-//             name="contactnumber"
-//             value={form.contactnumber}
-//             onChange={onChange}
-//             placeholder="Phone Number"
-//             className="w-full border p-3 rounded"
-//           />
-
-//           {/* messages */}
-//           {err && <p className="text-red-500">{err}</p>}
-//           {msg && <p className="text-green-600">{msg}</p>}
-
-//           {/* button */}
-//           <button
-//             type="submit"
-//             disabled={loading}
-//             className="bg-green-600 text-white px-5 py-2 rounded"
-//           >
-//             {loading ? "Saving..." : "Save"}
-//           </button>
-//         </form>
-//       </div>
-//     </div>
-//   );
-// }
 import React, { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { showError, showSuccess } from "../../utils/toast";
 
 const API_BASE = import.meta?.env?.VITE_API_BASE_URL || "http://localhost:5001";
+
+const formatDateOnly = (value) => {
+  if (!value) return "";
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+
+  return date.toISOString().split("T")[0];
+};
 
 export default function EditProfile() {
   const navigate = useNavigate();
@@ -188,21 +20,30 @@ export default function EditProfile() {
     name: "",
     email: "",
     contactnumber: "",
+    dateJoined: "",
   });
 
   const [profilePicture, setProfilePicture] = useState(null);
   const [preview, setPreview] = useState("");
   const [loading, setLoading] = useState(false);
-  const [err, setErr] = useState("");
-  const [msg, setMsg] = useState("");
 
   useEffect(() => {
     try {
       const u = JSON.parse(localStorage.getItem("user")) || {};
+
+      const userJoinedDate =
+        u.dateJoined ||
+        u.joinedAt ||
+        u.createdAt ||
+        u.created_at ||
+        u.registeredAt ||
+        "";
+
       setForm({
         name: u.name || "",
         email: u.email || "",
         contactnumber: u.contactnumber || u.phone || "",
+        dateJoined: formatDateOnly(userJoinedDate),
       });
 
       if (u.profilePicture) {
@@ -212,7 +53,12 @@ export default function EditProfile() {
             : `${API_BASE}${u.profilePicture}`
         );
       }
-    } catch {}
+    } catch {
+      setForm((prev) => ({
+        ...prev,
+        dateJoined: "",
+      }));
+    }
   }, []);
 
   const token = useMemo(() => {
@@ -224,28 +70,85 @@ export default function EditProfile() {
     );
   }, []);
 
+  const initials = useMemo(() => {
+    const raw = String(form.name || form.email || "User").trim();
+    const parts = raw.split(" ").filter(Boolean);
+    return ((parts[0]?.[0] || "U") + (parts[1]?.[0] || "")).toUpperCase();
+  }, [form.name, form.email]);
+
+  const joinedDisplay = form.dateJoined || "-";
+
   const onChange = (e) => {
-    setForm((p) => ({ ...p, [e.target.name]: e.target.value }));
+    const { name, value } = e.target;
+    setForm((p) => ({ ...p, [name]: value }));
   };
 
   const handleImage = (file) => {
     if (!file) return;
+
+    if (!file.type?.startsWith("image/")) {
+      showError("Please upload a valid image file");
+      return;
+    }
+
     setProfilePicture(file);
     setPreview(URL.createObjectURL(file));
   };
 
+  const validateRequiredFields = () => {
+    const name = form.name.trim();
+    const email = form.email.trim();
+    const phone = form.contactnumber.trim();
+
+    if (!name) {
+      showError("Full name is required");
+      return false;
+    }
+
+    if (!email) {
+      showError("Email address is required");
+      return false;
+    }
+
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailPattern.test(email)) {
+      showError("Please enter a valid email address");
+      return false;
+    }
+
+    if (!phone) {
+      showError("Phone number is required");
+      return false;
+    }
+
+    if (!form.dateJoined) {
+      showError("Date joined is required");
+      return false;
+    }
+
+    return true;
+  };
+
   const onSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
-    setErr("");
-    setMsg("");
+
+    if (!validateRequiredFields()) return;
+
+    if (!token) {
+      showError("Please login first");
+      return;
+    }
 
     try {
+      setLoading(true);
+
       const formData = new FormData();
-      formData.append("name", form.name);
-      formData.append("email", form.email);
-      formData.append("contactnumber", form.contactnumber);
-      formData.append("phone", form.contactnumber);
+      formData.append("name", form.name.trim());
+      formData.append("email", form.email.trim());
+      formData.append("contactnumber", form.contactnumber.trim());
+      formData.append("phone", form.contactnumber.trim());
+      formData.append("dateJoined", form.dateJoined);
+      formData.append("joinedAt", form.dateJoined);
 
       if (profilePicture) {
         formData.append("profilePicture", profilePicture);
@@ -257,74 +160,82 @@ export default function EditProfile() {
         body: formData,
       });
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data?.message || "Update failed");
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        throw new Error(data?.message || "Update failed");
+      }
+
+      const previousUser = JSON.parse(localStorage.getItem("user") || "{}");
 
       const updatedUser = {
-        ...JSON.parse(localStorage.getItem("user") || "{}"),
+        ...previousUser,
         ...data,
+        name: form.name.trim(),
+        email: form.email.trim(),
+        contactnumber: form.contactnumber.trim(),
+        phone: form.contactnumber.trim(),
+        dateJoined: form.dateJoined,
+        joinedAt: form.dateJoined,
       };
 
       localStorage.setItem("user", JSON.stringify(updatedUser));
       window.dispatchEvent(new Event("userUpdated"));
       window.dispatchEvent(new Event("user-profile-updated"));
 
-      setMsg("Profile updated successfully!");
-      setTimeout(() => navigate("/profile"), 900);
+      showSuccess("Profile updated successfully");
+
+      setTimeout(() => {
+        navigate("/profile");
+      }, 900);
     } catch (e2) {
-      setErr(e2.message || "Update failed");
+      showError(e2.message || "Update failed");
     } finally {
       setLoading(false);
     }
   };
 
-  const initials = useMemo(() => {
-    const raw = String(form.name || form.email || "User").trim();
-    const parts = raw.split(" ").filter(Boolean);
-    return ((parts[0]?.[0] || "U") + (parts[1]?.[0] || "")).toUpperCase();
-  }, [form]);
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-gray-100 px-4 py-8">
-      <div className="mx-auto max-w-6xl">
-        <div className="mb-8 flex flex-wrap items-start justify-between gap-4">
+    <div className="min-h-screen bg-slate-100 px-3 py-4 sm:px-5 sm:py-6 lg:px-8">
+      <div className="mx-auto w-full max-w-7xl">
+        <div className="mb-6 flex flex-col gap-5 rounded-2xl border border-slate-200 bg-white px-4 py-5 shadow-sm sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-7">
           <div>
-            <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-green-700">
+            <p className="text-xs font-bold uppercase tracking-[0.22em] text-green-700">
               My Account
             </p>
-            <h1 className="mt-1 text-3xl font-black tracking-tight text-gray-900">
+
+            <h1 className="mt-2 text-2xl font-extrabold tracking-tight text-slate-950 sm:text-3xl lg:text-4xl">
               Edit Profile
             </h1>
-            <p className="mt-2 max-w-2xl text-sm text-gray-600">
-              Update your personal details and profile picture to keep your CricBook account professional and up to date.
+
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500 sm:text-base">
+              Update your personal details, joined date, and profile picture to
+              keep your CricBook account accurate and professional.
             </p>
           </div>
 
           <Link
             to="/profile"
-            className="rounded-2xl border border-gray-200 bg-white px-5 py-3 text-sm font-semibold text-gray-700 shadow-sm transition hover:border-green-200 hover:bg-green-50 hover:text-green-700"
+            className="inline-flex w-fit items-center justify-center rounded-2xl border border-green-200 bg-white px-5 py-3 text-sm font-semibold text-green-700 shadow-sm transition hover:border-green-300 hover:bg-green-50"
           >
             ← Back to Profile
           </Link>
         </div>
 
-        <form
-          onSubmit={onSubmit}
-          className="grid gap-6 xl:grid-cols-12"
-        >
+        <form onSubmit={onSubmit} className="grid gap-6 xl:grid-cols-12">
           <aside className="xl:col-span-4">
-            <div className="overflow-hidden rounded-[28px] border border-white/70 bg-white shadow-[0_20px_60px_rgba(16,24,40,0.08)]">
-              <div className="bg-gradient-to-r from-green-700 to-green-600 px-6 py-7 text-white">
+            <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+              <div className="bg-gradient-to-r from-green-700 to-green-600 px-5 py-6 text-white sm:px-6">
                 <p className="text-sm font-semibold text-green-50">
                   Profile Preview
                 </p>
-                <h2 className="mt-1 text-2xl font-black">Your Identity Card</h2>
+                <h2 className="mt-1 text-2xl font-bold">Identity Card</h2>
               </div>
 
-              <div className="p-6">
-                <div className="flex flex-col items-center">
+              <div className="p-5 sm:p-6">
+                <div className="flex flex-col items-center text-center">
                   <div className="group relative">
-                    <div className="flex h-32 w-32 items-center justify-center overflow-hidden rounded-[28px] border-4 border-green-100 bg-green-100 text-3xl font-black text-green-800 shadow-sm">
+                    <div className="flex h-28 w-28 items-center justify-center overflow-hidden rounded-2xl border-4 border-green-100 bg-green-100 text-3xl font-bold text-green-800 shadow-sm sm:h-32 sm:w-32">
                       {preview ? (
                         <img
                           src={preview}
@@ -336,8 +247,8 @@ export default function EditProfile() {
                       )}
                     </div>
 
-                    <label className="absolute inset-0 flex cursor-pointer items-center justify-center rounded-[28px] bg-black/45 opacity-0 transition group-hover:opacity-100">
-                      <span className="rounded-full bg-white px-4 py-2 text-sm font-bold text-gray-900">
+                    <label className="absolute inset-0 flex cursor-pointer items-center justify-center rounded-2xl bg-black/45 opacity-0 transition group-hover:opacity-100">
+                      <span className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-900">
                         Change Photo
                       </span>
                       <input
@@ -349,19 +260,31 @@ export default function EditProfile() {
                     </label>
                   </div>
 
-                  <p className="mt-4 text-xl font-black text-gray-900">
+                  <p className="mt-4 max-w-full break-words text-xl font-bold text-slate-950">
                     {form.name || "Your Name"}
                   </p>
-                  <p className="mt-1 text-sm text-gray-500">
+
+                  <p className="mt-1 max-w-full break-words text-sm text-slate-500">
                     {form.email || "your@email.com"}
                   </p>
 
-                  <div className="mt-6 w-full rounded-2xl border border-green-100 bg-green-50 p-4">
+                  <div className="mt-4 flex flex-wrap justify-center gap-2">
+                    <span className="rounded-full bg-green-600 px-3 py-1 text-xs font-bold uppercase tracking-wide text-white">
+                      User
+                    </span>
+
+                    <span className="rounded-full bg-green-50 px-3 py-1 text-xs font-bold text-green-700 ring-1 ring-green-200">
+                      User since {joinedDisplay}
+                    </span>
+                  </div>
+
+                  <div className="mt-6 w-full rounded-2xl border border-green-100 bg-green-50 p-4 text-left">
                     <p className="text-xs font-bold uppercase tracking-wider text-green-700">
-                      Upload Tip
+                      Profile Photo
                     </p>
                     <p className="mt-2 text-sm leading-6 text-green-800">
-                      Use a clear profile picture for a more trusted and polished account appearance.
+                      Use a clear profile picture for a more trusted and
+                      polished account appearance.
                     </p>
                   </div>
                 </div>
@@ -370,18 +293,20 @@ export default function EditProfile() {
           </aside>
 
           <section className="xl:col-span-8">
-            <div className="rounded-[28px] border border-white/70 bg-white p-6 shadow-[0_20px_60px_rgba(16,24,40,0.08)] sm:p-8">
-              <div className="flex flex-wrap items-start justify-between gap-4">
+            <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6 lg:p-8">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div>
-                  <h2 className="text-2xl font-black tracking-tight text-gray-900">
+                  <h2 className="text-2xl font-bold tracking-tight text-slate-950">
                     Personal Information
                   </h2>
-                  <p className="mt-1 text-sm text-gray-600">
-                    Edit your account details below and save changes when ready.
+
+                  <p className="mt-1 text-sm leading-6 text-slate-500">
+                    Fields marked with <span className="text-red-600">*</span>{" "}
+                    are required.
                   </p>
                 </div>
 
-                <div className="rounded-2xl border border-gray-100 bg-gray-50 px-4 py-3 text-sm text-gray-600">
+                <div className="w-fit rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-600">
                   Secure profile update
                 </div>
               </div>
@@ -393,6 +318,7 @@ export default function EditProfile() {
                   value={form.name}
                   onChange={onChange}
                   placeholder="Enter your full name"
+                  required
                 />
 
                 <Field
@@ -402,38 +328,42 @@ export default function EditProfile() {
                   value={form.email}
                   onChange={onChange}
                   placeholder="Enter your email"
+                  required
                 />
 
-                <div className="md:col-span-2">
-                  <Field
-                    label="Phone Number"
-                    name="contactnumber"
-                    value={form.contactnumber}
-                    onChange={onChange}
-                    placeholder="Enter phone number"
-                  />
-                </div>
+                <Field
+                  label="Phone Number"
+                  name="contactnumber"
+                  value={form.contactnumber}
+                  onChange={onChange}
+                  placeholder="Enter phone number"
+                  required
+                />
+
+                <Field
+                  label="Date Joined"
+                  name="dateJoined"
+                  type="date"
+                  value={form.dateJoined}
+                  onChange={onChange}
+                  placeholder="Select joined date"
+                  required
+                />
               </div>
 
-              {(err || msg) && (
-                <div className="mt-6 space-y-3">
-                  {err && (
-                    <div className="rounded-2xl border border-red-100 bg-red-50 px-4 py-3 text-sm font-medium text-red-600">
-                      {err}
-                    </div>
-                  )}
-                  {msg && (
-                    <div className="rounded-2xl border border-green-100 bg-green-50 px-4 py-3 text-sm font-medium text-green-700">
-                      {msg}
-                    </div>
-                  )}
-                </div>
-              )}
+              <div className="mt-6 rounded-2xl border border-green-100 bg-green-50 px-4 py-3">
+                <p className="text-xs font-bold uppercase tracking-wider text-green-700">
+                  Account Created
+                </p>
+                <p className="mt-1 text-sm font-semibold text-green-900">
+                  User since {joinedDisplay}
+                </p>
+              </div>
 
               <div className="mt-8 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
                 <Link
                   to="/profile"
-                  className="rounded-2xl border border-gray-200 bg-white px-5 py-3 text-center text-sm font-semibold text-gray-700 transition hover:bg-gray-50"
+                  className="rounded-2xl border border-slate-300 bg-white px-5 py-3 text-center text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
                 >
                   Cancel
                 </Link>
@@ -461,19 +391,23 @@ function Field({
   onChange,
   placeholder,
   type = "text",
+  required = false,
 }) {
   return (
     <div>
-      <label className="mb-2 block text-sm font-semibold text-gray-700">
+      <label className="mb-2 block text-sm font-semibold text-slate-700">
         {label}
+        {required && <span className="ml-1 text-red-600">*</span>}
       </label>
+
       <input
         type={type}
         name={name}
         value={value}
         onChange={onChange}
         placeholder={placeholder}
-        className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3.5 text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-green-400 focus:bg-white focus:ring-4 focus:ring-green-100"
+        required={required}
+        className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3.5 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-green-500 focus:bg-white focus:ring-4 focus:ring-green-100"
       />
     </div>
   );

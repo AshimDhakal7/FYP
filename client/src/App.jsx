@@ -42,6 +42,9 @@ import AdminLoyalty from "./pages/admin/AdminLoyalty";
 
 import InvoiceVerification from "./pages/InvoiceVerification";
 
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
 import "./App.css";
 
 function AppRoutes() {
@@ -49,6 +52,7 @@ function AppRoutes() {
   const isAdminRoute = location.pathname.startsWith("/admin");
 
   return (
+    
     <div className="app-shell">
       {!isAdminRoute && <Header />}
 
@@ -72,6 +76,7 @@ function AppRoutes() {
               </RequireAuth>
             }
           />
+          
 
           <Route
             path="/profile"
@@ -135,6 +140,7 @@ function AppRoutes() {
               </RequireAuth>
             }
           >
+            
             <Route index element={<OwnerDashboard />} />
             <Route path="courts" element={<OwnerCourts />} />
             <Route path="bookings" element={<OwnerBookings />} />
@@ -164,6 +170,15 @@ function AppRoutes() {
       </main>
 
       {!isAdminRoute && <Footer />}
+
+      <>
+  {/* your routes/components */}
+  <ToastContainer
+    position="top-right"
+    autoClose={3000}
+    theme="colored"
+  />
+</>
     </div>
   );
 }

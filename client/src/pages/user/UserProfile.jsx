@@ -11,6 +11,15 @@ const LOYALTY_RULES = {
   REDEEM_DISCOUNT_PERCENT: 60,
 };
 
+const formatJoinedDate = (value) => {
+  if (!value) return "-";
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "-";
+
+  return date.toISOString().split("T")[0];
+};
+
 export default function UserProfile() {
   const location = useLocation();
   const firstLoadRef = useRef(true);
@@ -41,6 +50,7 @@ export default function UserProfile() {
     try {
       const raw = localStorage.getItem("user");
       const parsed = raw ? JSON.parse(raw) : null;
+
       setUser((prev) => {
         const next = parsed || null;
         if (JSON.stringify(prev) === JSON.stringify(next)) return prev;
@@ -140,6 +150,7 @@ export default function UserProfile() {
       await refreshAll({ silent: false });
       firstLoadRef.current = false;
     };
+
     run();
   }, [refreshAll, location.pathname]);
 
@@ -189,6 +200,16 @@ export default function UserProfile() {
     };
   }, [bookings]);
 
+  const joinedDate = useMemo(() => {
+    return formatJoinedDate(
+      user?.createdAt ||
+        user?.joinedAt ||
+        user?.created_at ||
+        user?.dateJoined ||
+        user?.registeredAt
+    );
+  }, [user]);
+
   const safeUser = useMemo(() => {
     return {
       name: user?.name || "User",
@@ -215,13 +236,6 @@ export default function UserProfile() {
     return (a + b).toUpperCase();
   }, [safeUser]);
 
-  const memberSince = useMemo(() => {
-    if (!user?.createdAt) return "Recently joined";
-    const d = new Date(user.createdAt);
-    if (Number.isNaN(d.getTime())) return "Recently joined";
-    return d.toLocaleDateString();
-  }, [user]);
-
   const canRedeem = useMemo(() => {
     return (
       Number(safeUser?.loyaltyPoints || 0) >=
@@ -245,11 +259,14 @@ export default function UserProfile() {
             <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-green-700">
               My Account
             </p>
+
             <h1 className="mt-2 text-3xl font-black tracking-tight text-gray-900">
               Profile Overview
             </h1>
+
             <p className="mt-2 max-w-2xl text-sm text-gray-600">
-              Manage your account details, bookings, and loyalty rewards in one place.
+              Manage your account details, bookings, and loyalty rewards in one
+              place.
             </p>
           </div>
 
@@ -272,7 +289,7 @@ export default function UserProfile() {
                         src={
                           safeUser.profilePicture?.startsWith("http")
                             ? safeUser.profilePicture
-                            : `http://localhost:5001${safeUser.profilePicture}`
+                            : `${API_BASE}${safeUser.profilePicture}`
                         }
                         alt="Profile"
                         className="h-full w-full object-cover"
@@ -283,7 +300,10 @@ export default function UserProfile() {
                   </div>
 
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-2xl font-black">{safeUser.name}</p>
+                    <p className="truncate text-2xl font-black">
+                      {safeUser.name}
+                    </p>
+
                     <p className="mt-1 truncate text-sm text-green-50">
                       {safeUser.email}
                     </p>
@@ -292,8 +312,9 @@ export default function UserProfile() {
                       <span className="rounded-full bg-white/15 px-3 py-1 text-xs font-semibold uppercase tracking-wide">
                         {safeUser.role}
                       </span>
+
                       <span className="rounded-full bg-white/15 px-3 py-1 text-xs font-semibold">
-                        Joined {memberSince}
+                        User since {joinedDate}
                       </span>
                     </div>
                   </div>
@@ -303,9 +324,11 @@ export default function UserProfile() {
                   <p className="text-xs font-bold uppercase tracking-[0.18em] text-green-100">
                     Contact Number
                   </p>
+
                   <p className="mt-2 text-lg font-bold text-white">
                     {safeUser.contact}
                   </p>
+
                   <p className="mt-1 text-xs text-green-50/90">
                     Permanently visible for quick access.
                   </p>
@@ -318,35 +341,35 @@ export default function UserProfile() {
                     to="/profile/edit"
                     className="flex items-center justify-center rounded-2xl bg-green-700 px-4 py-3.5 text-sm font-bold text-white shadow-sm transition hover:bg-green-800"
                   >
-                    ✏️ Update Profile
+                    Update Profile
                   </Link>
 
                   <Link
                     to="/bookings"
                     className="rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3.5 font-semibold text-gray-800 transition hover:border-green-200 hover:bg-green-50 hover:text-green-700"
                   >
-                    📅 My Bookings
+                    My Bookings
                   </Link>
 
                   <Link
                     to="/find-cricsal"
                     className="rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3.5 font-semibold text-gray-800 transition hover:border-green-200 hover:bg-green-50 hover:text-green-700"
                   >
-                    🏏 Find Cricsal
+                    Find Cricsal
                   </Link>
 
                   <Link
                     to="/loyalty"
                     className="rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3.5 font-semibold text-gray-800 transition hover:border-green-200 hover:bg-green-50 hover:text-green-700"
                   >
-                    ⭐ Loyalty History
+                    Loyalty History
                   </Link>
 
                   <Link
                     to="/support"
                     className="rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3.5 font-semibold text-gray-800 transition hover:border-green-200 hover:bg-green-50 hover:text-green-700"
                   >
-                    💬 Support
+                    Support
                   </Link>
                 </div>
 
@@ -354,9 +377,11 @@ export default function UserProfile() {
                   <p className="text-xs font-bold uppercase tracking-[0.18em] text-green-700">
                     Loyalty Balance
                   </p>
+
                   <p className="mt-2 text-4xl font-black text-green-900">
                     {safeUser.loyaltyPoints}
                   </p>
+
                   <p className="mt-2 text-sm text-green-700">
                     Reward points available now.
                   </p>
@@ -366,6 +391,7 @@ export default function UserProfile() {
                   <p className="text-xs font-bold uppercase tracking-[0.18em] text-emerald-700">
                     Redemption Status
                   </p>
+
                   {canRedeem ? (
                     <p className="mt-2 text-sm font-semibold text-emerald-800">
                       Reward unlocked. You can redeem 1000 points for 60% off.
@@ -387,17 +413,20 @@ export default function UserProfile() {
                 value={statsLoading ? "..." : computedStats.totalBookings}
                 subtitle="Total bookings"
               />
+
               <ThemeStatCard
                 title="Points"
                 value={statsLoading ? "..." : safeUser.loyaltyPoints}
                 subtitle="Available balance"
                 accent="green"
               />
+
               <ThemeStatCard
                 title="Paid"
                 value={statsLoading ? "..." : computedStats.paidBookings}
                 subtitle="Completed payments"
               />
+
               <ThemeStatCard
                 title="Saved"
                 value={statsLoading ? "..." : `Rs ${computedStats.totalDiscountUsed}`}
@@ -411,6 +440,7 @@ export default function UserProfile() {
                   <h2 className="text-2xl font-black tracking-tight text-gray-900">
                     Personal Information
                   </h2>
+
                   <p className="mt-1 text-sm text-gray-600">
                     Hi {firstName}, here are your profile details.
                   </p>
@@ -428,6 +458,13 @@ export default function UserProfile() {
                 <ThemeInfoCard label="Full Name" value={safeUser.name} />
                 <ThemeInfoCard label="Email Address" value={safeUser.email} />
                 <ThemeInfoCard label="Role" value={safeUser.role} />
+
+                <ThemeInfoCard
+                  label="Date Joined"
+                  value={joinedDate}
+                  highlight
+                />
+
                 <ThemeInfoCard
                   label="Contact Number"
                   value={safeUser.contact}
@@ -440,8 +477,10 @@ export default function UserProfile() {
               <h3 className="text-2xl font-black tracking-tight text-gray-900">
                 Loyalty Rules
               </h3>
+
               <p className="mt-1 text-sm text-gray-600">
-                Your loyalty balance changes based on payments, cancellations, and redemption.
+                Your loyalty balance changes based on payments, cancellations,
+                and redemption.
               </p>
 
               <div className="mt-6 grid gap-4 md:grid-cols-2">
@@ -450,16 +489,19 @@ export default function UserProfile() {
                   value={`+${LOYALTY_RULES.FULL_PAYMENT_REWARD} points`}
                   tone="green"
                 />
+
                 <ThemeRuleCard
                   title="Redeem"
                   value={`${LOYALTY_RULES.REDEEM_POINTS_REQUIRED} points = ${LOYALTY_RULES.REDEEM_DISCOUNT_PERCENT}% off`}
                   tone="emerald"
                 />
+
                 <ThemeRuleCard
                   title="Normal Cancellation"
                   value={`-${LOYALTY_RULES.NORMAL_CANCELLATION_PENALTY} points`}
                   tone="amber"
                 />
+
                 <ThemeRuleCard
                   title="Late Cancellation"
                   value={`-${LOYALTY_RULES.LATE_CANCELLATION_PENALTY} points`}
@@ -472,6 +514,7 @@ export default function UserProfile() {
               <h3 className="text-2xl font-black tracking-tight text-gray-900">
                 Loyalty Snapshot
               </h3>
+
               <p className="mt-1 text-sm text-gray-600">
                 A quick summary of your rewards activity.
               </p>
@@ -481,14 +524,18 @@ export default function UserProfile() {
                   label="Total Earned"
                   value={statsLoading ? "..." : loyaltySummary.totalEarned}
                 />
+
                 <ThemeInfoCard
                   label="Total Spent / Lost"
                   value={statsLoading ? "..." : loyaltySummary.totalSpent}
                 />
+
                 <ThemeInfoCard
                   label="Redeemed on Bookings"
                   value={
-                    statsLoading ? "..." : computedStats.totalPointsRedeemedFromBookings
+                    statsLoading
+                      ? "..."
+                      : computedStats.totalPointsRedeemedFromBookings
                   }
                 />
               </div>
@@ -507,13 +554,17 @@ function ThemeStatCard({ title, value, subtitle, accent = "default" }) {
       : "border-green-100 bg-white";
 
   return (
-    <div className={`rounded-3xl border p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md ${style}`}>
+    <div
+      className={`rounded-3xl border p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md ${style}`}
+    >
       <p className="text-xs font-bold uppercase tracking-[0.18em] text-gray-500">
         {title}
       </p>
+
       <p className="mt-3 text-4xl font-black tracking-tight text-gray-900">
         {value}
       </p>
+
       <p className="mt-2 text-sm text-gray-600">{subtitle}</p>
     </div>
   );
@@ -531,6 +582,7 @@ function ThemeInfoCard({ label, value, highlight = false }) {
       <p className="text-xs font-bold uppercase tracking-[0.18em] text-gray-500">
         {label}
       </p>
+
       <p className="mt-2 break-words text-lg font-bold text-gray-900">
         {value}
       </p>
@@ -551,6 +603,7 @@ function ThemeRuleCard({ title, value, tone = "green" }) {
       <p className="text-xs font-bold uppercase tracking-[0.18em] opacity-80">
         {title}
       </p>
+
       <p className="mt-2 text-lg font-black">{value}</p>
     </div>
   );
