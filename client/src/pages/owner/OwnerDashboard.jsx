@@ -58,7 +58,9 @@ export default function OwnerDashboard() {
 
   const user = JSON.parse(localStorage.getItem("user") || "null");
   const name = user?.name || user?.username || user?.email?.split("@")[0] || "Owner";
-  // 🔥 Commission Logic
+
+
+  // Commission Logic
   const grossRevenue = useMemo(
     () => bookings.reduce((sum, b) => sum + Number(b.totalPrice || 0), 0),
     [bookings]
@@ -67,7 +69,7 @@ export default function OwnerDashboard() {
   const adminCommission = grossRevenue * COMMISSION_RATE;
   const myEarning = grossRevenue * 0.9;
 
-  // ✅ ORIGINAL CHART (UNCHANGED STYLE)
+  // Owner's income chart
   const chartData = [
     { day: "Mon", value: 2000 },
     { day: "Tue", value: 3500 },
