@@ -28,6 +28,7 @@ import OwnerLayout from "./pages/owner/OwnerLayout";
 import OwnerDashboard from "./pages/owner/OwnerDashboard";
 import OwnerCourts from "./pages/owner/OwnerCourts";
 import OwnerBookings from "./pages/owner/OwnerBookings";
+import OwnerReviews from "./pages/owner/OwnerReviews";
 import OwnerSettings from "./pages/owner/OwnerSettings";
 
 import AdminLayout from "./pages/admin/AdminLayout";
@@ -39,6 +40,7 @@ import AdminGrounds from "./pages/admin/AdminGrounds";
 import AdminPayments from "./pages/admin/AdminPayments";
 import AdminReviews from "./pages/admin/AdminReviews";
 import AdminLoyalty from "./pages/admin/AdminLoyalty";
+import AdminEarnings from "./pages/admin/AdminEarnings";
 
 import InvoiceVerification from "./pages/InvoiceVerification";
 
@@ -144,6 +146,8 @@ function AppRoutes() {
             <Route index element={<OwnerDashboard />} />
             <Route path="courts" element={<OwnerCourts />} />
             <Route path="bookings" element={<OwnerBookings />} />
+            <Route path="courts" element={<OwnerCourts />} />
+            <Route path="reviews" element={<OwnerReviews />} />
             <Route path="settings" element={<OwnerSettings />} />
           </Route>
 
@@ -154,6 +158,7 @@ function AppRoutes() {
                 <AdminLayout />
               </RequireAuth>
             }
+            
           >
             <Route index element={<AdminDashboard />} />
             <Route path="users" element={<AdminUsers />} />
@@ -163,6 +168,7 @@ function AppRoutes() {
             <Route path="payments" element={<AdminPayments />} />
             <Route path="reviews" element={<AdminReviews />} />
             <Route path="loyalty" element={<AdminLoyalty />} />
+            <Route path="earnings" element={<AdminEarnings />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/" replace />} />

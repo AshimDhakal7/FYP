@@ -18,6 +18,7 @@ function getPageTitle(pathname) {
   if (pathname.includes("/bookings")) return "Bookings Management";
   if (pathname.includes("/payments")) return "Payments Management";
   if (pathname.includes("/reviews")) return "Reviews Monitoring";
+  if (pathname.includes("/earnings")) return "Admin Earnings"; // ✅ NEW
   return "Superadmin Panel";
 }
 
@@ -40,13 +41,12 @@ export default function AdminLayout() {
           email: parsed?.email || "",
         };
       }
-    } catch {
-      // ignore
-    }
+    } catch {}
 
     return { name: "Superadmin", email: "" };
   }, []);
 
+  // ✅ UPDATED LINKS (includes My Earnings)
   const links = useMemo(
     () => [
       { name: "Dashboard", to: "/admin", icon: "◈" },
@@ -55,6 +55,10 @@ export default function AdminLayout() {
       { name: "Grounds", to: "/admin/grounds", icon: "🏟️" },
       { name: "Bookings", to: "/admin/bookings", icon: "📅" },
       { name: "Payments", to: "/admin/payments", icon: "💳" },
+
+      // 🔥 NEW SECTION
+      { name: "My Earnings", to: "/admin/earnings", icon: "💰" },
+
       { name: "Reviews", to: "/admin/reviews", icon: "⭐" },
     ],
     []
@@ -75,6 +79,8 @@ export default function AdminLayout() {
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100">
       <div className="flex min-h-screen">
+
+        {/* Overlay for mobile */}
         {mobileOpen && (
           <button
             className="fixed inset-0 z-30 bg-black/50 lg:hidden"
@@ -82,12 +88,15 @@ export default function AdminLayout() {
           />
         )}
 
+        {/* Sidebar */}
         <aside
           className={`fixed inset-y-0 left-0 z-40 w-[290px] transform border-r border-white/10 bg-slate-950/95 backdrop-blur-xl transition duration-300 lg:static lg:translate-x-0 ${
             mobileOpen ? "translate-x-0" : "-translate-x-full"
           }`}
         >
           <div className="flex h-full flex-col">
+
+            {/* Logo */}
             <div className="border-b border-white/10 px-6 py-6">
               <div className="flex items-center gap-3">
                 <div className="grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br from-emerald-400 to-cyan-400 font-bold text-slate-950 shadow-lg shadow-emerald-500/20">
@@ -98,12 +107,13 @@ export default function AdminLayout() {
                     CricBook Superadmin
                   </h1>
                   <p className="text-sm text-slate-400">
-                    CONTROL PANNEL
+                    CONTROL PANEL
                   </p>
                 </div>
               </div>
             </div>
 
+            {/* Navigation */}
             <nav className="flex-1 space-y-2 px-4 py-6">
               {links.map((link) => (
                 <NavLink
@@ -123,13 +133,16 @@ export default function AdminLayout() {
                   <div>
                     <p className="font-medium">{link.name}</p>
                     <p className="text-xs opacity-70">
-                      Manage {link.name.toLowerCase()}
+                      {link.name === "My Earnings"
+                        ? "View admin commission"
+                        : `Manage ${link.name.toLowerCase()}`}
                     </p>
                   </div>
                 </NavLink>
               ))}
             </nav>
 
+            {/* User Info + Logout */}
             <div className="border-t border-white/10 p-4">
               <div className="mb-4 rounded-3xl border border-white/10 bg-white/5 p-4">
                 <p className="text-sm text-slate-400">Signed in as</p>
@@ -149,7 +162,10 @@ export default function AdminLayout() {
           </div>
         </aside>
 
+        {/* Main */}
         <div className="flex min-w-0 flex-1 flex-col bg-[radial-gradient(circle_at_top_right,_rgba(16,185,129,0.12),_transparent_30%),radial-gradient(circle_at_top_left,_rgba(6,182,212,0.10),_transparent_25%),linear-gradient(to_bottom,_#020617,_#0f172a)]">
+
+          {/* Header */}
           <header className="sticky top-0 z-20 border-b border-white/10 bg-slate-950/60 backdrop-blur-xl">
             <div className="flex items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
               <div className="flex items-center gap-3">
@@ -171,17 +187,18 @@ export default function AdminLayout() {
               </div>
 
               <div className="flex items-center gap-3">
-  <div className="hidden rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-slate-300 sm:block">
-    Live platform monitoring
-  </div>
-  <NotificationBell />
-  <div className="grid h-11 w-11 place-items-center rounded-2xl bg-gradient-to-br from-emerald-400 to-cyan-400 font-semibold text-slate-950">
-    S
-  </div>
-</div>
+                <div className="hidden rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-slate-300 sm:block">
+                  Live platform monitoring
+                </div>
+                <NotificationBell />
+                <div className="grid h-11 w-11 place-items-center rounded-2xl bg-gradient-to-br from-emerald-400 to-cyan-400 font-semibold text-slate-950">
+                  S
+                </div>
+              </div>
             </div>
           </header>
 
+          {/* Content */}
           <main className="flex-1 px-4 py-4 sm:px-6 lg:px-8">
             <div className="min-h-[calc(100vh-120px)] rounded-[32px] border border-white/10 bg-white/5 p-4 shadow-2xl shadow-black/20 backdrop-blur-xl sm:p-6">
               <Outlet />
