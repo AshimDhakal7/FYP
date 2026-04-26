@@ -30,6 +30,7 @@ import OwnerCourts from "./pages/owner/OwnerCourts";
 import OwnerBookings from "./pages/owner/OwnerBookings";
 import OwnerReviews from "./pages/owner/OwnerReviews";
 import OwnerSettings from "./pages/owner/OwnerSettings";
+import EarningHistory from "./pages/owner/EarningHistory";
 
 import AdminLayout from "./pages/admin/AdminLayout";
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -145,6 +146,7 @@ function AppRoutes() {
             
             <Route index element={<OwnerDashboard />} />
             <Route path="courts" element={<OwnerCourts />} />
+            <Route path="earnings" element={<EarningHistory />} />
             <Route path="bookings" element={<OwnerBookings />} />
             <Route path="courts" element={<OwnerCourts />} />
             <Route path="reviews" element={<OwnerReviews />} />

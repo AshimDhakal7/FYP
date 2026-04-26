@@ -58,15 +58,12 @@ export default function OwnerLayout() {
         : "text-slate-700 hover:bg-slate-50"
     }`;
 
-  // ✅ UPDATED LINKS (includes Reviews & Ratings)
   const links = [
     { to: "/owner-dashboard", label: "Dashboard", end: true },
     { to: "/owner-dashboard/courts", label: "Manage Courts" },
     { to: "/owner-dashboard/bookings", label: "Bookings" },
-
-    // 🔥 NEW SECTION
+    { to: "/owner-dashboard/earnings", label: "Earning History" },
     { to: "/owner-dashboard/reviews", label: "Reviews & Ratings" },
-
     { to: "/owner-dashboard/settings", label: "Settings" },
   ];
 
