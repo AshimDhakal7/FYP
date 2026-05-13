@@ -1,5 +1,6 @@
 import React from "react";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
+import RequireAuth from "./components/auth/RequireAuth";
 
 import Header from "./components/Navbar";
 import Footer from "./components/Footer";
@@ -138,7 +139,7 @@ function AppRoutes() {
           <Route
             path="/owner-dashboard"
             element={
-              <RequireAuth>
+              <RequireAuth role="owner">
                 <OwnerLayout />
               </RequireAuth>
             }
