@@ -14,7 +14,7 @@ export default function Dashboard() {
     }
   }, []);
 
-  const displayName = user?.name || user?.username || "Ashim Dai";
+  const displayName = user?.name || user?.username || "User";
 
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);

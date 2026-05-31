@@ -689,19 +689,19 @@ const getInitials = (user) => {
 
   if (name) {
     const parts = name.split(/\s+/).filter(Boolean);
-    const first = parts[0]?.[0] || "A";
-    const second = parts[1]?.[0] || "D";
+    const first = parts[0]?.[0] || "U";
+    const second = parts[1]?.[0] || "";
     return `${first}${second}`.toUpperCase();
   }
 
   if (email) {
-    const local = email.split("@")[0]?.replace(/[^a-zA-Z0-9]/g, "") || "AD";
-    const first = local[0] || "A";
-    const second = local[1] || "D";
+    const local = email.split("@")[0]?.replace(/[^a-zA-Z0-9]/g, "") || "U";
+    const first = local[0] || "U";
+    const second = local[1] || "";
     return `${first}${second}`.toUpperCase();
   }
 
-  return "AD";
+  return "u";
 };
 
 const getDisplayName = (user) => {
