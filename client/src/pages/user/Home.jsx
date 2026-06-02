@@ -36,7 +36,7 @@ export default function Home() {
     }
   }, []);
 
-  const displayName = user?.name || user?.username || "Ashim Dai";
+  const displayName = user?.name || user?.username || "User";
 
   const token = useMemo(() => {
     return (
